@@ -1,0 +1,19 @@
+{
+    "name": "CANSim",
+    "version": "1.0.0",
+    "description": "Support library for CAN bus based flight sim gauges",
+    "keywords": "sim, can",
+    "authors": {
+        "name": "jj",
+        "email": "me@john-smith.com",
+        "url": "https://www.john-smith/contact"
+    },
+    "dependencies": {
+        "clearwater/SwitecX25": "^1.0.0",
+        "arkhipenko/TaskScheduler": "^3.4.0",
+        "thijse/ArduinoLog": "^1.1.1",
+        "thomasfredericks/Bounce2": "^2.70",
+        "janelia-arduino/Array": "^1.2.1",
+        "MCP_CAN_lib": "https://github.com/coryjfowler/MCP_CAN_lib/archive/refs/heads/master.zip"
+    }
+}

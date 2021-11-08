@@ -46,8 +46,8 @@ private:
     Task taskCANReceive_;
     Task taskCANCheckError_;
     MCP_CAN* mcpCAN_;
-    int intPort_;
     uint16_t simaddress_;  // 0 .. 1023
+    int intPort_;
 
     struct CallBack
     {

@@ -124,13 +124,14 @@ void TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte
     Log.verboseln("send message priority: %d, port: %d, addr %d, len: %d", priority, port, dstSimAddress, len);
     uint32_t msg = 0;
     // 4 bits: (25 .. 28) priority (0 .. 15)
-    msg |= (priority & 0b1111) << 25;
+    msg |= (static_cast<uint32_t>(priority) & 0b1111) << 25;
     // 5 bits: (20 .. 24) port
-    msg |= (port & 0b11111) << 20;
+    msg |= (static_cast<uint32_t>(port) & 0b11111) << 20;
     // 10 bits (9 .. 19): dst address (0 .. 1023)
-    msg |= (dstSimAddress & 0b11111) << 9;
+    msg |= (static_cast<uint32_t>(dstSimAddress) & 0b11111) << 9;
     // 10 bits (0 .. 9): src address (0 .. 1023)
-    msg |= (simaddress_ & 0b111111) << 0;
+    msg |= (static_cast<uint32_t>(simaddress_) & 0b111111) << 0;
+
     mcpCAN_->sendMsgBuf(msg, 1, len, payload);
 }
 
