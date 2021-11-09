@@ -164,4 +164,6 @@ void TaskCAN::parseBuffer(uint32_t id, byte len, byte* buffer)
 
     if (port < 32 && callbacks_[port].callback != nullptr)
         callbacks_[port].callback(len, buffer, callbacks_[port].data);
+    else
+        Log.warningln("CANSIM: no port %d handler", port);
 }

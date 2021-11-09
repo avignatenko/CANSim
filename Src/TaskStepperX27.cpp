@@ -40,7 +40,7 @@ void TaskStepperX27::start()
     for (unsigned int i = 0; i < motor_->steps; i++)
     {
         motor_->stepDown();
-        delayMicroseconds(1000);
+        delayMicroseconds(3000);
     }
 
     setPosition(0);
@@ -53,6 +53,7 @@ void TaskStepperX27::setPosition(uint16_t position)
     Log.traceln("TaskStepperX27::setPosition %d", position);
 
     int steps = (uint32_t)position * (motor_->steps - 1) / 65535;
+    Log.traceln("TaskStepperX27::setPosition steps %d", steps);
     motor_->setPosition(steps);
 }
 
