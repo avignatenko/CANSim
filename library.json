@@ -4,9 +4,9 @@
     "description": "Support library for CAN bus based flight sim gauges",
     "keywords": "sim, can",
     "authors": {
-        "name": "jj",
-        "email": "me@john-smith.com",
-        "url": "https://www.john-smith/contact"
+        "name": "avignatenko",
+        "email": "alexey.ignatenko@gmail.com",
+        "url": "https://github.com/avignatenko/CANSim"
     },
     "dependencies": {
         "clearwater/SwitecX25": "^1.0.0",
