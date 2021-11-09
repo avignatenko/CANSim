@@ -127,10 +127,10 @@ void TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte
     msg |= (static_cast<uint32_t>(priority) & 0b1111) << 25;
     // 5 bits: (20 .. 24) port
     msg |= (static_cast<uint32_t>(port) & 0b11111) << 20;
-    // 10 bits (9 .. 19): dst address (0 .. 1023)
-    msg |= (static_cast<uint32_t>(dstSimAddress) & 0b11111) << 9;
+    // 10 bits (10 .. 19): dst address (0 .. 1023)
+    msg |= (static_cast<uint32_t>(dstSimAddress) & 0b1111111111) << 10;
     // 10 bits (0 .. 9): src address (0 .. 1023)
-    msg |= (static_cast<uint32_t>(simaddress_) & 0b111111) << 0;
+    msg |= (static_cast<uint32_t>(simaddress_) & 0b1111111111) << 0;
 
     mcpCAN_->sendMsgBuf(msg, 1, len, payload);
 }
@@ -147,7 +147,7 @@ void TaskCAN::parseBuffer(uint32_t id, byte len, byte* buffer)
     Log.verboseln("Message id: %l", id);
     // 4 bits: (25 .. 28) priority (0 .. 15)
     // 5 bits: (20 .. 24) port
-    // 10 bits (9 .. 19): dst address (0 .. 1023)
+    // 10 bits (10 .. 19): dst address (0 .. 1023)
     // 10 bits (0 .. 9): src address (0 .. 1023)
     uint16_t srcAddress = id & 0b1111111111;
     uint16_t dstAddress = (id >> 10) & 0b1111111111;

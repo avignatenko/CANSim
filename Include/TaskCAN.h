@@ -10,7 +10,7 @@ class MCP_CAN;
 // CAN id (high bit -> low bit, total 29 bits, only extended format supported):
 // 4 bits: (25 .. 28) priority (0 .. 15, less is more priority)
 // 5 bits: (20 .. 24) port
-// 10 bits (9 .. 19): dst address (0 .. 1023)
+// 10 bits (10 .. 19): dst address (0 .. 1023)
 // 10 bits (0 .. 9): src address (0 .. 1023)
 // + CAN payload (0 - 8 bytes)
 //
