@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-class SwitecX25;
+class AccelStepper;
 
 class TaskStepperX27
 {
@@ -25,5 +25,5 @@ private:
 
     Task task_;
 
-    SwitecX25* motor_;
+    AccelStepper* motor_;
 };
