@@ -74,6 +74,13 @@ void TaskErrorLed::removeError(int error)
     updateDelay();
 }
 
+void TaskErrorLed::removeAllErrors()
+{
+    if (error_ == 0) return;
+    error_ = 0;
+    updateDelay();
+}
+
 int TaskErrorLed::error()
 {
     return error_;

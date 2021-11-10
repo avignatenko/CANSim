@@ -25,7 +25,6 @@ void TaskCAN::loopCANReceiveCallback()
             return;
         }
 
-        parseBuffer(id & 0x1FFFFFFF, len, buf);
 #ifndef DISABLE_LOGGING
         if (Log.getLevel() >= LOG_LEVEL_VERBOSE)
         {
@@ -36,8 +35,10 @@ void TaskCAN::loopCANReceiveCallback()
             }
             Serial.println();
         }
-    }
+
 #endif
+        parseBuffer(id & 0x1FFFFFFF, len, buf);
+    }
 }
 
 void TaskCAN::loopCANCheckCallback()
@@ -54,7 +55,6 @@ void TaskCAN::loopCANCheckCallback()
     else
     {
         Log.verboseln("CAN no error");
-        TaskErrorLed::instance().removeError(TaskErrorLed::ERROR_CAN);
     }
 }
 
@@ -86,23 +86,24 @@ void TaskCAN::start()
 {
     pinMode(intPort_, INPUT);
 
-    for (int i = 0; i < 5; ++i)
+    int retriesLeft = 5;
+    for (; retriesLeft >= 0; --retriesLeft)
     {
         if (CAN_OK == mcpCAN_->begin(MCP_STDEXT, CAN_500KBPS, MCP_16MHZ))  // init can bus : baudrate = 500k
         {
             Log.infoln("CAN BUS Shield init ok!");
-            TaskErrorLed::instance().removeError(TaskErrorLed::ERROR_CAN);
             break;
         }
         else
         {
             Log.warningln("CAN BUS Shield init fail");
             Log.warningln("Init CAN BUS Shield again");
-            TaskErrorLed::instance().addError(TaskErrorLed::ERROR_CAN);
             delay(500);
             continue;
         }
     }
+
+    if (retriesLeft < 0) TaskErrorLed::instance().addError(TaskErrorLed::ERROR_CAN);
 
     // mcpCAN_->init_Mask(0, 1, 0b11111111110000000000);  // Init first mask...
     // mcpCAN_->init_Mask(1, 1, 0b11111111110000000000);  // Init second mask...
@@ -135,11 +136,10 @@ void TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte
     mcpCAN_->sendMsgBuf(msg, 1, len, payload);
 }
 
-void TaskCAN::setReceiveCallback(MessageCallback callback, byte port, void* data)
+void TaskCAN::setReceiveCallback(MessageCallback callback, void* data)
 {
-    CallBack& c = callbacks_[port];
-    c.callback = callback;
-    c.data = data;
+    callback_.callback = callback;
+    callback_.data = data;
 }
 
 void TaskCAN::parseBuffer(uint32_t id, byte len, byte* buffer)
@@ -162,8 +162,8 @@ void TaskCAN::parseBuffer(uint32_t id, byte len, byte* buffer)
 
     Log.verboseln("CANSIM message: src: %d, dst: %d, port: %d, priority: %d", srcAddress, dstAddress, port, priority);
 
-    if (port < 32 && callbacks_[port].callback != nullptr)
-        callbacks_[port].callback(len, buffer, callbacks_[port].data);
+    if (callback_.callback)
+        callback_.callback(priority, port, srcAddress, dstAddress, len, buffer, callback_.data);
     else
         Log.warningln("CANSIM: no port %d handler", port);
 }

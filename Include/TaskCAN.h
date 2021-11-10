@@ -2,8 +2,6 @@
 
 #include "Common.h"
 
-#include <Array.h>
-
 class MCP_CAN;
 
 // CAM-Sim message format
@@ -27,8 +25,8 @@ public:
 
     void sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload);
 
-    using MessageCallback = void (*)(byte, byte*, void*);
-    void setReceiveCallback(MessageCallback callback, byte port, void* data = nullptr);
+    using MessageCallback = void (*)(byte, byte, uint16_t, uint16_t, byte, byte*, void*);
+    void setReceiveCallback(MessageCallback callback, void* data = nullptr);
 
 private:
     TaskCAN(Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress);
@@ -55,5 +53,5 @@ private:
         void* data = nullptr;
     };
 
-    Array<CallBack, 32> callbacks_;
+    CallBack callback_;
 };
