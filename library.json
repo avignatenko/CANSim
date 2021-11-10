@@ -12,7 +12,7 @@
         "SPI": "",
         "clearwater/SwitecX25": "^1.0.0",
         "arkhipenko/TaskScheduler": "^3.4.0",
-        "thijse/ArduinoLog": "^1.1.1",
+        "ArduinoLog": "https://github.com/katutxakurra/Arduino-Log.git",
         "thomasfredericks/Bounce2": "^2.70",
         "MCP_CAN_lib": "https://github.com/avignatenko/MCP_CAN_lib.git"
     }
