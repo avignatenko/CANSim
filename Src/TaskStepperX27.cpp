@@ -48,13 +48,15 @@ void TaskStepperX27::start()
     task_.enable();
 }
 
-void TaskStepperX27::setPosition(uint16_t position)
+void TaskStepperX27::setPosition(uint16_t steps)
 {
-    Log.traceln("TaskStepperX27::setPosition %d", position);
-
-    int steps = (uint32_t)position * (motor_->steps - 1) / 65535;
-    Log.traceln("TaskStepperX27::setPosition steps %d", steps);
+    Log.traceln("TaskStepperX27::setPosition %d", steps);
     motor_->setPosition(steps);
+}
+
+uint16_t TaskStepperX27::totalSteps() const
+{
+    return motor_->steps;
 }
 
 TaskStepperX27& TaskStepperX27::instance()
