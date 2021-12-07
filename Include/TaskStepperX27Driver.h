@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-class SwitecX12;
+class AccelStepper;
 
 class TaskStepperX27Driver
 {
@@ -27,6 +27,6 @@ private:
 
     Task task_;
 
-    SwitecX12* motor_;
+    AccelStepper* motor_;
     byte resetPin_;
 };

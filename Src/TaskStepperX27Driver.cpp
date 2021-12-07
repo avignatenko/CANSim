@@ -1,6 +1,8 @@
 #include "TaskStepperX27Driver.h"
 
-#include <SwitecX12.h>
+#include <AccelStepper.h>
+
+constexpr int kTotalSteps = 315 * 12;
 
 void TaskStepperX27Driver::loopStepperCallbackStatic()
 {
@@ -10,18 +12,19 @@ void TaskStepperX27Driver::loopStepperCallbackStatic()
 
 void TaskStepperX27Driver::loopStepperCallback()
 {
-    motor_->update();
+    motor_->run();
 }
 
 TaskStepperX27Driver* TaskStepperX27Driver::instance_ = nullptr;
 
 TaskStepperX27Driver::TaskStepperX27Driver(Scheduler& sh, byte step, byte dir, byte reset)
-    : task_(800, TASK_FOREVER, &loopStepperCallbackStatic, &sh, false)
+    : task_(TASK_IMMEDIATE, TASK_FOREVER, &loopStepperCallbackStatic, &sh, false)
 {
     Log.traceln("TaskStepper::TaskStepper");
 
     // standard X25.168 range 315 degrees at 1/3 degree steps, but 1/12 degree with driver
-    motor_ = new SwitecX12(315 * 12, step, dir);
+    motor_ = new AccelStepper(AccelStepper::DRIVER, step, dir);
+
     resetPin_ = reset;
 }
 
@@ -32,25 +35,21 @@ void TaskStepperX27Driver::init(Scheduler& sh, byte step, byte dir, byte reset)
 
 void TaskStepperX27Driver::start()
 {
+    // enable driver
     digitalWrite(resetPin_, HIGH);
 
-    // fixme: why 300microsec don't work?
+    motor_->setEnablePin(resetPin_);
 
-    motor_->currentStep = motor_->steps - 1;
-    int dir = -1;
-    int count = motor_->currentStep - 0;
+    motor_->enableOutputs();
+    motor_->setPinsInverted(true); // invert direction
 
-    for (int i = 0; i < count; i++)
-    {
-        motor_->step(dir);
-        delayMicroseconds(800);
-    }
+    // per datasheet speed limit 600 deg / second = 600 * 12 steps / second
+    motor_->setMaxSpeed(600 * 12 * 0.8);  // steps per second
+    motor_->setAcceleration(8000);
 
-    motor_->targetStep = 0;
-    motor_->vel = 0;
-    motor_->dir = 0;
-
-    setPosition(0);
+    motor_->setCurrentPosition(kTotalSteps - 1);
+    motor_->moveTo(0);
+    motor_->runToPosition();
 
     task_.enable();
 }
@@ -58,17 +57,17 @@ void TaskStepperX27Driver::start()
 void TaskStepperX27Driver::setPosition(uint16_t steps)
 {
     Log.traceln("TaskStepperX27Driver::setPosition %d", steps);
-    motor_->setPosition(steps);
+    motor_->moveTo(steps);
 }
 
 uint16_t TaskStepperX27Driver::position() const
 {
-    return motor_->targetStep;
+    return motor_->currentPosition();
 }
 
 uint16_t TaskStepperX27Driver::totalSteps() const
 {
-    return motor_->steps;
+    return kTotalSteps;
 }
 
 TaskStepperX27Driver& TaskStepperX27Driver::instance()
