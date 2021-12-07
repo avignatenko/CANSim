@@ -167,3 +167,13 @@ void TaskCAN::parseBuffer(uint32_t id, byte len, byte* buffer)
     else
         Log.warningln("CANSIM: no port %d handler", port);
 }
+
+uint16_t TaskCAN::simAddress()
+{
+    return simaddress_;
+}
+
+void TaskCAN::setSimAddress(uint16_t simAddress)
+{
+    simaddress_ = simAddress;
+}

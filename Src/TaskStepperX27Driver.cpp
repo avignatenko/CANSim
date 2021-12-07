@@ -41,15 +41,23 @@ void TaskStepperX27Driver::start()
     motor_->setEnablePin(resetPin_);
 
     motor_->enableOutputs();
-    motor_->setPinsInverted(true); // invert direction
+    motor_->setPinsInverted(true);  // invert direction
 
     // per datasheet speed limit 600 deg / second = 600 * 12 steps / second
-    motor_->setMaxSpeed(600 * 12 * 0.8);  // steps per second
-    motor_->setAcceleration(8000);
+    constexpr int kMaxSpeed = 600 * 12 * 0.7;  // steps per second
+    constexpr int kAcceleration = 9000;
+
+    // set calibration speed & accelration
+    motor_->setMaxSpeed(kMaxSpeed / 3);
+    motor_->setAcceleration(kAcceleration / 2);
 
     motor_->setCurrentPosition(kTotalSteps - 1);
     motor_->moveTo(0);
     motor_->runToPosition();
+
+    // set normal speed & acceleration
+    motor_->setMaxSpeed(kMaxSpeed);
+    motor_->setAcceleration(kAcceleration);
 
     task_.enable();
 }

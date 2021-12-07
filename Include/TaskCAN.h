@@ -28,6 +28,9 @@ public:
     using MessageCallback = void (*)(byte, byte, uint16_t, uint16_t, byte, byte*, void*);
     void setReceiveCallback(MessageCallback callback, void* data = nullptr);
 
+    uint16_t simAddress();
+    void setSimAddress(uint16_t simAddress);
+
 private:
     TaskCAN(Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress);
 
