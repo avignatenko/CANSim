@@ -65,7 +65,7 @@ void TaskStepperX27Driver::start()
 void TaskStepperX27Driver::setPosition(uint16_t steps)
 {
     Log.traceln("TaskStepperX27Driver::setPosition %d", steps);
-    motor_->moveTo(steps);
+    motor_->moveTo(constrain(steps, 0, kTotalSteps - 1));
 }
 
 uint16_t TaskStepperX27Driver::position() const
