@@ -12,8 +12,8 @@ public:
 
     void start();
 
-    void setPosition(uint16_t position);
-    uint16_t position() const;
+    void setPosition(int16_t position);
+    int16_t position() const;
     uint16_t totalSteps() const;
 
 private:
