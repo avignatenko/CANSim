@@ -24,7 +24,6 @@ void TaskErrorLed::loopBlinkLedCallbackStatic()
 
 void TaskErrorLed::loopBlinkLedCallback()
 {
-    Log.traceln("TaskErrorLed::loopBlinkLedCallback()");
     // blink
     led(!ledOn_);
 }
@@ -34,7 +33,6 @@ TaskErrorLed* TaskErrorLed::instance_ = nullptr;
 TaskErrorLed::TaskErrorLed(Scheduler& sh, byte ledPort)
     : ledPort_(ledPort), task_(0, TASK_FOREVER, &loopBlinkLedCallbackStatic, &sh, false)
 {
-    Log.traceln("TaskErrorLed::TaskErrorLed()");
     pinMode(ledPort_, OUTPUT);
 }
 
@@ -45,8 +43,6 @@ void TaskErrorLed::init(Scheduler& sh, byte ledPort)
 
 void TaskErrorLed::start()
 {
-    Log.traceln("TaskErrorLed::start()");
-
     // test 2sec on
     led(true);
     delay(2000);
@@ -90,7 +86,6 @@ void TaskErrorLed::updateDelay()
 {
     if (error_ == ERROR_OK)
     {
-        Log.verboseln("TaskErrorLed:updateDelay No error");
         led(false);
         task_.disable();
         return;
@@ -99,15 +94,12 @@ void TaskErrorLed::updateDelay()
     int highestBit = getHighestBit(error_);
     if (highestBit == 0)  // on forever
     {
-        Log.verboseln("TaskErrorLed:updateDelay always on");
         led(true);
         task_.disable();
         return;
     }
 
     int delayMs = 1000 / highestBit;
-
-    Log.noticeln("TaskErrorLed:updateDelay delays ms = %d", delayMs);
 
     task_.enableIfNot();
     task_.setInterval(delayMs * TASK_MILLISECOND);

@@ -20,8 +20,6 @@ TaskStepperX27Driver* TaskStepperX27Driver::instance_ = nullptr;
 TaskStepperX27Driver::TaskStepperX27Driver(Scheduler& sh, byte step, byte dir, byte reset)
     : task_(TASK_IMMEDIATE, TASK_FOREVER, &loopStepperCallbackStatic, &sh, false)
 {
-    Log.traceln("TaskStepper::TaskStepper");
-
     // standard X25.168 range 315 degrees at 1/3 degree steps, but 1/12 degree with driver
     motor_ = new AccelStepper(AccelStepper::DRIVER, step, dir);
 
@@ -64,7 +62,6 @@ void TaskStepperX27Driver::start()
 
 void TaskStepperX27Driver::setPosition(int16_t steps)
 {
-    Log.traceln("TaskStepperX27Driver::setPosition %d", steps);
     motor_->moveTo(constrain(steps, 0, kTotalSteps - 1));
 }
 

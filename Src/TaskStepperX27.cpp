@@ -18,8 +18,6 @@ TaskStepperX27* TaskStepperX27::instance_ = nullptr;
 TaskStepperX27::TaskStepperX27(Scheduler& sh, byte p1, byte p2, byte p3, byte p4)
     : task_(1 * TASK_MILLISECOND, TASK_FOREVER, &loopStepperCallbackStatic, &sh, false)
 {
-    Log.traceln("TaskStepper::TaskStepper");
-
     // standard X25.168 range 315 degrees at 1/3 degree steps
     // FIXME: solder in proper way, to have A0, A1, A2, A3!
     // https://guy.carpenter.id.au/gaugette/2012/04/04/making-wiring-harnesses/
@@ -50,7 +48,6 @@ void TaskStepperX27::start()
 
 void TaskStepperX27::setPosition(uint16_t steps)
 {
-    Log.traceln("TaskStepperX27::setPosition %d", steps);
     motor_->setPosition(steps);
 }
 

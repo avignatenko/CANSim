@@ -21,40 +21,23 @@ void TaskCAN::loopCANReceiveCallback()
         int result = mcpCAN_->readMsgBuf(&id, &len, buf);  // read data,  len: data length, buf: data buf
         if (result != CAN_OK)
         {
-            Log.warningln("Can failed read buf");
             return;
         }
 
-#ifndef DISABLE_LOGGING
-        if (Log.getLevel() >= LOG_LEVEL_VERBOSE)
-        {
-            for (int i = 0; i < len; i++)  // print the data
-            {
-                Serial.print(buf[i]);
-                Serial.print("\t");
-            }
-            Serial.println();
-        }
-
-#endif
         parseBuffer(id & 0x1FFFFFFF, len, buf);
     }
 }
 
 void TaskCAN::loopCANCheckCallback()
 {
-    Log.traceln("TaskCAN::loopCANCheckCallback()");
-
     int error = mcpCAN_->checkError();
 
     if (error != 0)
     {
-        Log.errorln("CAN error: %d", error);
         TaskErrorLed::instance().addError(TaskErrorLed::ERROR_CAN);
     }
     else
     {
-        Log.verboseln("CAN no error");
     }
 }
 
@@ -74,7 +57,6 @@ TaskCAN::TaskCAN(Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress)
       intPort_(intPort)
 
 {
-    Log.traceln("TaskCAN::TaskCAN()");
 }
 
 void TaskCAN::init(Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress)
@@ -91,13 +73,10 @@ void TaskCAN::start()
     {
         if (CAN_OK == mcpCAN_->begin(MCP_STDEXT, CAN_500KBPS, MCP_16MHZ))  // init can bus : baudrate = 500k
         {
-            Log.infoln("CAN BUS Shield init ok!");
             break;
         }
         else
         {
-            Log.warningln("CAN BUS Shield init fail");
-            Log.warningln("Init CAN BUS Shield again");
             delay(500);
             continue;
         }
@@ -122,7 +101,6 @@ TaskCAN& TaskCAN::instance()
 
 void TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload)
 {
-    Log.verboseln("send message priority: %d, port: %d, addr %d, len: %d", priority, port, dstSimAddress, len);
     uint32_t msg = 0;
     // 4 bits: (25 .. 28) priority (0 .. 15)
     msg |= (static_cast<uint32_t>(priority) & 0b1111) << 25;
@@ -144,7 +122,6 @@ void TaskCAN::setReceiveCallback(MessageCallback callback, void* data)
 
 void TaskCAN::parseBuffer(uint32_t id, byte len, byte* buffer)
 {
-    Log.verboseln("Message id: %l", id);
     // 4 bits: (25 .. 28) priority (0 .. 15)
     // 5 bits: (20 .. 24) port
     // 10 bits (10 .. 19): dst address (0 .. 1023)
@@ -153,19 +130,13 @@ void TaskCAN::parseBuffer(uint32_t id, byte len, byte* buffer)
     uint16_t dstAddress = (id >> 10) & 0b1111111111;
     if (dstAddress != simaddress_)
     {
-        Log.verboseln("Wrong address: %d (we need %d)", dstAddress, simaddress_);
         return;
     }
 
     uint16_t port = (id >> 20) & 0b11111;
     uint16_t priority = (id >> 25) & 0b1111;
 
-    Log.verboseln("CANSIM message: src: %d, dst: %d, port: %d, priority: %d", srcAddress, dstAddress, port, priority);
-
-    if (callback_.callback)
-        callback_.callback(priority, port, srcAddress, dstAddress, len, buffer, callback_.data);
-    else
-        Log.warningln("CANSIM: no port %d handler", port);
+    if (callback_.callback) callback_.callback(priority, port, srcAddress, dstAddress, len, buffer, callback_.data);
 }
 
 uint16_t TaskCAN::simAddress()

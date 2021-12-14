@@ -13,7 +13,6 @@
         "clearwater/SwitecX25": "^1.0.0",
         "waspinator/AccelStepper": "^1.61",
         "arkhipenko/TaskScheduler": "^3.4.0",
-        "ArduinoLog": "https://github.com/katutxakurra/Arduino-Log.git",
         "thomasfredericks/Bounce2": "^2.70",
         "MCP_CAN_lib": "https://github.com/avignatenko/MCP_CAN_lib.git",
         "janelia-arduino/Array": "^1.2.1"
