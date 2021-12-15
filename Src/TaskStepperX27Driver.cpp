@@ -23,7 +23,8 @@ TaskStepperX27Driver::TaskStepperX27Driver(Scheduler& sh, byte step, byte dir, b
     // standard X25.168 range 315 degrees at 1/3 degree steps, but 1/12 degree with driver
     motor_ = new AccelStepper(AccelStepper::DRIVER, step, dir);
 
-    resetPin_ = reset;
+    motor_->setPinsInverted(true);  // invert direction
+    motor_->setEnablePin(reset);
 }
 
 void TaskStepperX27Driver::init(Scheduler& sh, byte step, byte dir, byte reset)
@@ -33,13 +34,7 @@ void TaskStepperX27Driver::init(Scheduler& sh, byte step, byte dir, byte reset)
 
 void TaskStepperX27Driver::start()
 {
-    // enable driver
-    digitalWrite(resetPin_, HIGH);
-
-    motor_->setEnablePin(resetPin_);
-
     motor_->enableOutputs();
-    motor_->setPinsInverted(true);  // invert direction
 
     // per datasheet speed limit 600 deg / second = 600 * 12 steps / second
     constexpr int kMaxSpeed = 600 * 12 * 0.7;  // steps per second

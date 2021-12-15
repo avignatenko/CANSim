@@ -28,5 +28,4 @@ private:
     Task task_;
 
     AccelStepper* motor_;
-    byte resetPin_;
 };
