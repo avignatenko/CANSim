@@ -34,13 +34,8 @@ void TaskStepperTMC2208::start()
    
     motor_->enableOutputs();
 
-    // per datasheet speed limit 600 deg / second = 600 * 12 steps / second
-    constexpr int kMaxSpeed = 600 * 12 * 0.7;  // steps per second
-    constexpr int kAcceleration = 9000;
-
-    // set calibration speed & accelration
-    motor_->setMaxSpeed(kMaxSpeed / 3);
-    motor_->setAcceleration(kAcceleration / 2);
+    constexpr int kMaxSpeed = 20000;  // steps per second
+    constexpr int kAcceleration = 5000;
 
     motor_->setCurrentPosition(0);
 
@@ -51,12 +46,17 @@ void TaskStepperTMC2208::start()
     task_.enable();
 }
 
-void TaskStepperTMC2208::setPosition(int16_t steps)
+void TaskStepperTMC2208::setPosition(int32_t steps)
 {
     motor_->moveTo(steps);
 }
 
-int16_t TaskStepperTMC2208::position() const
+void TaskStepperTMC2208::resetPosition(int32_t position)
+{
+    motor_->setCurrentPosition(position);
+}
+
+int32_t TaskStepperTMC2208::position() const
 {
     return motor_->currentPosition();
 }

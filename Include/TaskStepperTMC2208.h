@@ -12,8 +12,9 @@ public:
 
     void start();
 
-    void setPosition(int16_t position);
-    int16_t position() const;
+    void resetPosition(int32_t position);
+    void setPosition(int32_t position);
+    int32_t position() const;
 
 private:
     TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset, float speed, float acceleration);
