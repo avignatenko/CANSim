@@ -27,7 +27,7 @@ public:
     bool removeValue(double x)
     {  // find spot
         int idx = xValues_.size();
-        for (int i = 0; i < xValues_.size(); ++i)
+        for (int i = 0; i < (int)xValues_.size(); ++i)
         {
             if (xValues_[i] == x)
             {
@@ -35,16 +35,17 @@ public:
                 break;
             }
         }
-        if (idx == xValues_.size()) return false;
+        if (idx == (int)xValues_.size()) return false;
 
         xValues_.remove(idx);
+        return true;
     }
 
     void addValue(double x, int y)
     {
         // find spot
         int idx = xValues_.size();
-        for (int i = 0; i < xValues_.size(); ++i)
+        for (int i = 0; i < (int)xValues_.size(); ++i)
         {
             if (xValues_[i] == x)
             {
@@ -75,7 +76,7 @@ public:
     {
         size_t r = 0;
 
-        for (int i = 0; i < xValues_.size(); ++i)
+        for (int i = 0; i < (int)xValues_.size(); ++i)
         {
             if (i > 0) r += p.println();
             r += p.print(xValues_[i]);
