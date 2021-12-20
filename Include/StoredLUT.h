@@ -4,7 +4,7 @@
 #include <Array.h>
 #include <EEPROM.h>
 
-template <int EEPROM_IDX>
+template <int EEPROM_IDX, int SIZE = 20>
 class StoredLUT : public Printable
 {
 public:
@@ -130,6 +130,6 @@ public:
     }
 
 private:
-    Array<double, 20> xValues_;
-    Array<double, 20> yValues_;
+    Array<double, SIZE> xValues_;
+    Array<double, SIZE> yValues_;
 };
