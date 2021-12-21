@@ -18,18 +18,51 @@ void TaskMenu::loopMenuCallback()
 
 TaskMenu* TaskMenu::instance_ = nullptr;
 
-void TaskMenu::cmdSimAddressCallback(SerialCommands* sender)
+void TaskMenu::cmdVarCallback(SerialCommands* sender)
 {
-    const char* addrStr = sender->Next();
-    if (!addrStr) addrStr = "0";
-    int addr = atoi(addrStr);
-
-    uint16_t newAddr = 0;
-    if (TaskMenu::instance().simAddressCallback_) newAddr = TaskMenu::instance().simAddressCallback_(addr);
-    if (newAddr)
+    const char* nameStr = sender->Next();
+    if (!nameStr)
     {
-        Serial.println();
-        Serial.println(newAddr);
+        sender->GetSerial()->println(F("Error: no variable name"));
+        return;
+    }
+
+    // find this variable
+    TaskMenu& me = TaskMenu::instance();
+    int idx = -1;
+    for (int i = 0; i < (int)me.vars_.size(); ++i)
+    {
+        if (strcmp(me.vars_[i].name, nameStr) == 0)
+        {
+            idx = i;
+            break;
+        }
+    }
+    if (idx < 0)
+    {
+        sender->GetSerial()->println(F("Error: no such variable"));
+        return;
+    }
+
+    const char* valueStr = sender->Next();
+
+    if (!valueStr)
+    {
+        if (me.vars_[idx].getter)
+        {
+            float value = me.vars_[idx].getter();
+            sender->GetSerial()->println(value);
+            return;
+        }
+    }
+
+    float value = atof(valueStr);
+    if (me.vars_[idx].setter)
+    {
+        me.vars_[idx].setter(value);
+
+        float value = me.vars_[idx].getter();
+        sender->GetSerial()->println(value);
     }
 }
 
@@ -38,11 +71,18 @@ void TaskMenu::helpCallback(SerialCommands* sender)
     static const auto* a = F(R"=====( 
 Help: 
  help - this help text
- addr <address> - change sim address for this device
+ var <name> [value] get/set device variable
 )=====");
 
     Stream* s = sender->GetSerial();
     s->println(a);
+
+    s->println(F("Variables:"));
+    for (int i = 0; i < (int)vars_.size(); ++i)
+    {
+        s->print(' ');
+        s->println(vars_[i].name);
+    }
 }
 
 void TaskMenu::cmdHelpCallback(SerialCommands* sender)
@@ -64,7 +104,7 @@ TaskMenu::TaskMenu(Scheduler& sh) : task_(TASK_IMMEDIATE, TASK_FOREVER, &loopMen
     cmdLine_ = new SerialCommands(&Serial, s_serial_command_buffer, sizeof(s_serial_command_buffer), "\r\n", " ");
 
     static SerialCommand s_cmdHelp("help", &TaskMenu::cmdHelpCallback);
-    static SerialCommand s_cmdAddr("addr", &TaskMenu::cmdSimAddressCallback);
+    static SerialCommand s_cmdAddr("var", &TaskMenu::cmdVarCallback);
 
     cmdLine_->AddCommand(&s_cmdHelp);
     cmdLine_->AddCommand(&s_cmdAddr);
@@ -84,9 +124,14 @@ void TaskMenu::start()
     task_.enable();
 }
 
-void TaskMenu::setSimAddressCallback(SimAddressCallback callback)
+void TaskMenu::addVar(const char* name, VarGetCallback get, VarSetCallback set)
 {
-    simAddressCallback_ = callback;
+    Var v;
+    v.name = name;
+    v.getter = get;
+    v.setter = set;
+
+    vars_.push_back(v);
 }
 
 TaskMenu& TaskMenu::instance()

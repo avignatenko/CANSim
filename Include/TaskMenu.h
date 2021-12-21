@@ -2,6 +2,8 @@
 
 #include "Common.h"
 
+#include <Array.h>
+
 class SerialCommands;
 
 class TaskMenu
@@ -13,8 +15,9 @@ public:
 
     void start();
 
-    using SimAddressCallback = uint16_t (*)(uint16_t);
-    void setSimAddressCallback(SimAddressCallback callback);
+    using VarGetCallback = float (*)();
+    using VarSetCallback = void (*)(float);
+    void addVar(const char* name, VarGetCallback get, VarSetCallback set);
 
 protected:
     TaskMenu(Scheduler& sh);
@@ -31,11 +34,18 @@ private:
     static void loopMenuCallbackStatic();
 
     static void errorCallback(SerialCommands* sender, const char* command);
-    static void cmdSimAddressCallback(SerialCommands* sender);
+    static void cmdVarCallback(SerialCommands* sender);
     static void cmdHelpCallback(SerialCommands* sender);
 
 private:
     Task task_;
 
-    SimAddressCallback simAddressCallback_ = nullptr;
+    struct Var
+    {
+        const char* name = "";
+        VarGetCallback getter = nullptr;
+        VarSetCallback setter = nullptr;
+    };
+
+    Array<Var, 20> vars_;
 };
