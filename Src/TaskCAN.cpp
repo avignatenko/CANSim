@@ -1,16 +1,8 @@
 #include "TaskCAN.h"
 
-#include "TaskErrorLed.h"
-
 #include "mcp_can.h"
 
-void TaskCAN::loopCANReceiveStatic()
-{
-    TaskCAN& me = TaskCAN::instance();
-    me.loopCANReceiveCallback();
-}
-
-void TaskCAN::loopCANReceiveCallback()
+bool TaskCAN::loopCANReceiveCallback()
 {
     if (!digitalRead(intPort_))
     {
@@ -21,47 +13,39 @@ void TaskCAN::loopCANReceiveCallback()
         int result = mcpCAN_->readMsgBuf(&id, &len, buf);  // read data,  len: data length, buf: data buf
         if (result != CAN_OK)
         {
-            return;
+            return true;
         }
 
         parseBuffer(id & 0x1FFFFFFF, len, buf);
     }
+
+    return true;
 }
 
-void TaskCAN::loopCANCheckCallback()
+bool TaskCAN::loopCANCheckCallback()
 {
     int error = mcpCAN_->checkError();
 
     if (error != 0)
     {
-        TaskErrorLed::instance().addError(TaskErrorLed::ERROR_CAN);
+        taskErrorLed_.addError(TaskErrorLed::ERROR_CAN);
     }
     else
     {
     }
+
+    return true;
 }
 
-void TaskCAN::loopCANCheckStatic()
-{
-    TaskCAN& me = TaskCAN::instance();
-    me.loopCANCheckCallback();
-}
-
-TaskCAN* TaskCAN::instance_ = nullptr;
-
-TaskCAN::TaskCAN(Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress)
-    : taskCANReceive_(TASK_IMMEDIATE, TASK_FOREVER, &loopCANReceiveStatic, &sh, false),
-      taskCANCheckError_(1000 * TASK_MILLISECOND, TASK_FOREVER, &loopCANCheckStatic, &sh, false),
+TaskCAN::TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress)
+    : taskErrorLed_(taskErrorLed),
+      taskCANReceive_(this, &TaskCAN::loopCANReceiveCallback, TASK_IMMEDIATE, TASK_FOREVER, &sh, false),
+      taskCANCheckError_(this, &TaskCAN::loopCANCheckCallback, 1000 * TASK_MILLISECOND, TASK_FOREVER, &sh, false),
       mcpCAN_(new MCP_CAN(spiPort)),
       simaddress_(simaddress),
       intPort_(intPort)
 
 {
-}
-
-void TaskCAN::init(Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress)
-{
-    instance_ = new TaskCAN(sh, spiPort, intPort, simaddress);
 }
 
 void TaskCAN::start()
@@ -82,7 +66,7 @@ void TaskCAN::start()
         }
     }
 
-    if (retriesLeft < 0) TaskErrorLed::instance().addError(TaskErrorLed::ERROR_CAN);
+    if (retriesLeft < 0) taskErrorLed_.addError(TaskErrorLed::ERROR_CAN);
 
     // mcpCAN_->init_Mask(0, 1, 0b11111111110000000000);  // Init first mask...
     // mcpCAN_->init_Mask(1, 1, 0b11111111110000000000);  // Init second mask...
@@ -92,11 +76,6 @@ void TaskCAN::start()
 
     taskCANReceive_.enable();
     taskCANCheckError_.enable();
-}
-
-TaskCAN& TaskCAN::instance()
-{
-    return *instance_;
 }
 
 void TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload)
@@ -114,10 +93,9 @@ void TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte
     mcpCAN_->sendMsgBuf(msg, 1, len, payload);
 }
 
-void TaskCAN::setReceiveCallback(MessageCallback callback, void* data)
+void TaskCAN::setReceiveCallback(fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback)
 {
-    callback_.callback = callback;
-    callback_.data = data;
+    callback_ = callback;
 }
 
 void TaskCAN::parseBuffer(uint32_t id, byte len, byte* buffer)
@@ -136,7 +114,7 @@ void TaskCAN::parseBuffer(uint32_t id, byte len, byte* buffer)
     uint16_t port = (id >> 20) & 0b11111;
     uint16_t priority = (id >> 25) & 0b1111;
 
-    if (callback_.callback) callback_.callback(priority, port, srcAddress, dstAddress, len, buffer, callback_.data);
+    if (callback_) callback_(priority, port, srcAddress, dstAddress, len, buffer);
 }
 
 uint16_t TaskCAN::simAddress()

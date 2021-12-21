@@ -2,34 +2,28 @@
 
 #include "Common.h"
 
+#include "FastDelegate.h"
+
 namespace Bounce2
 {
 class Button;
 }
 
-class TaskButton
+class TaskButton : private Task
 {
 public:
-    static void init(Scheduler& sh, byte btnPort);
-
-    static TaskButton& instance();
+    TaskButton(Scheduler& sh, byte btnPort);
 
     void start();
 
-    using PressedCallback = void (*)(bool);
-    void setPressedCallback(PressedCallback callback) { callback_ = callback; }
+    void setPressedCallback(fastdelegate::FastDelegate1<bool> callback) { callback_ = callback; }
 
 private:
-    TaskButton(Scheduler& sh, byte btnPort);
-
-    void loopButtonCallback();
-
-    static void loopButtonCallbackStatic();
+    bool Callback() override;
 
 private:
     static TaskButton* instance_;
 
     Bounce2::Button* button_;
-    PressedCallback callback_ = nullptr;
-    Task task_;
+    fastdelegate::FastDelegate1<bool> callback_;
 };

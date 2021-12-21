@@ -2,12 +2,10 @@
 
 #include "Common.h"
 
-class TaskErrorLed
+class TaskErrorLed : private Task
 {
 public:
-    static void init(Scheduler& sh, byte ledPort);
-
-    static TaskErrorLed& instance();
+    TaskErrorLed(Scheduler& sh, byte ledPort);
 
     enum Error
     {
@@ -23,22 +21,16 @@ public:
     void removeAllErrors();
     int error();
 
+protected:
+    virtual bool Callback() override;
+
 private:
-    TaskErrorLed(Scheduler& sh, byte ledPort);
-
     void updateDelay();
-
-    void loopBlinkLedCallback();
-    static void loopBlinkLedCallbackStatic();
 
     void led(bool on);
 
 private:
-    static TaskErrorLed* instance_;
-
     byte ledPort_;
     byte error_ = 0;
     bool ledOn_ = false;
-
-    Task task_;
 };

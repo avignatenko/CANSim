@@ -2,13 +2,7 @@
 
 #include <Bounce2.h>
 
-void TaskButton::loopButtonCallbackStatic()
-{
-    TaskButton& me = TaskButton::instance();
-    me.loopButtonCallback();
-}
-
-void TaskButton::loopButtonCallback()
+bool TaskButton::Callback()
 {
     if (!callback_) return;
 
@@ -22,28 +16,21 @@ void TaskButton::loopButtonCallback()
     {
         callback_(false);
     }
+
+    return true;
 }
 
 TaskButton* TaskButton::instance_ = nullptr;
 
 TaskButton::TaskButton(Scheduler& sh, byte ledPort)
-    : button_(new Bounce2::Button()), task_(TASK_IMMEDIATE, TASK_FOREVER, &loopButtonCallbackStatic, &sh, false)
+    : button_(new Bounce2::Button()), Task(5 * TASK_MILLISECOND, TASK_FOREVER, &sh, false)
 {
     button_->attach(ledPort, INPUT_PULLUP);
     button_->interval(20);
     button_->setPressedState(LOW);
 }
 
-void TaskButton::init(Scheduler& sh, byte ledPort)
-{
-    instance_ = new TaskButton(sh, ledPort);
-}
-
 void TaskButton::start()
 {
-    task_.enable();
-}
-TaskButton& TaskButton::instance()
-{
-    return *instance_;
+    enable();
 }

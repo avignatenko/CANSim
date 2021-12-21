@@ -4,11 +4,10 @@
 
 class AccelStepper;
 
-class TaskStepperX27Driver
+class TaskStepperX27Driver: private Task
 {
 public:
-    static void init(Scheduler& sh, byte step, byte dir, byte reset);
-    static TaskStepperX27Driver& instance();
+    TaskStepperX27Driver(Scheduler& sh, byte step, byte dir, byte reset);
 
     void start();
 
@@ -17,15 +16,8 @@ public:
     uint16_t totalSteps() const;
 
 private:
-    TaskStepperX27Driver(Scheduler& sh, byte step, byte dir, byte reset);
-
-    void loopStepperCallback();
-    static void loopStepperCallbackStatic();
+    bool Callback() override;
 
 private:
-    static TaskStepperX27Driver* instance_;
-
-    Task task_;
-
     AccelStepper* motor_;
 };

@@ -6,7 +6,7 @@
 
 class SerialCommands;
 
-class TaskMenu
+class TaskMenu : private Task
 {
 public:
     static void init(Scheduler& sh);
@@ -30,16 +30,13 @@ protected:
     virtual void helpCallback(SerialCommands* sender);
 
 private:
-    void loopMenuCallback();
-    static void loopMenuCallbackStatic();
+    virtual bool Callback() override;
 
     static void errorCallback(SerialCommands* sender, const char* command);
     static void cmdVarCallback(SerialCommands* sender);
     static void cmdHelpCallback(SerialCommands* sender);
 
 private:
-    Task task_;
-
     struct Var
     {
         const char* name = "";

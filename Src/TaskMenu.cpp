@@ -2,13 +2,7 @@
 
 #include <SerialCommands.h>
 
-void TaskMenu::loopMenuCallbackStatic()
-{
-    TaskMenu& me = TaskMenu::instance();
-    me.loopMenuCallback();
-}
-
-void TaskMenu::loopMenuCallback()
+bool TaskMenu::Callback()
 {
     int received = Serial.peek();
     if (received >= 0) Serial.print((char)received);
@@ -98,7 +92,7 @@ void TaskMenu::errorCallback(SerialCommands* sender, const char* command)
     sender->GetSerial()->println(F("]"));
 }
 
-TaskMenu::TaskMenu(Scheduler& sh) : task_(TASK_IMMEDIATE, TASK_FOREVER, &loopMenuCallbackStatic, &sh, false)
+TaskMenu::TaskMenu(Scheduler& sh) : Task(TASK_IMMEDIATE, TASK_FOREVER, &sh, false)
 {
     static char s_serial_command_buffer[32];
     cmdLine_ = new SerialCommands(&Serial, s_serial_command_buffer, sizeof(s_serial_command_buffer), "\r\n", " ");
@@ -121,7 +115,7 @@ void TaskMenu::init(Scheduler& sh)
 
 void TaskMenu::start()
 {
-    task_.enable();
+    enable();
 }
 
 void TaskMenu::addVar(const char* name, VarGetCallback get, VarSetCallback set)

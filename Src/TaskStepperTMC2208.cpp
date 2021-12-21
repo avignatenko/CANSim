@@ -2,13 +2,7 @@
 
 #include <AccelStepper.h>
 
-void TaskStepperTMC2208::loopStepperCallbackStatic()
-{
-    TaskStepperTMC2208& me = TaskStepperTMC2208::instance();
-    me.loopStepperCallback();
-}
-
-void TaskStepperTMC2208::loopStepperCallback()
+bool TaskStepperTMC2208::Callback()
 {
     motor_->run();
 }
@@ -16,17 +10,12 @@ void TaskStepperTMC2208::loopStepperCallback()
 TaskStepperTMC2208* TaskStepperTMC2208::instance_ = nullptr;
 
 TaskStepperTMC2208::TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset, float speed, float acceleration)
-    : task_(TASK_IMMEDIATE, TASK_FOREVER, &loopStepperCallbackStatic, &sh, false)
+    : Task(TASK_IMMEDIATE, TASK_FOREVER, &sh, false)
 {
     motor_ = new AccelStepper(AccelStepper::DRIVER, step, dir);
 
     motor_->setPinsInverted(true, false, true);  // invert direction
     motor_->setEnablePin(reset);
-}
-
-void TaskStepperTMC2208::init(Scheduler& sh, byte step, byte dir, byte reset, float speed, float acceleration)
-{
-    instance_ = new TaskStepperTMC2208(sh, step, dir, reset, speed, acceleration);
 }
 
 void TaskStepperTMC2208::start()
@@ -43,7 +32,7 @@ void TaskStepperTMC2208::start()
     motor_->setMaxSpeed(kMaxSpeed);
     motor_->setAcceleration(kAcceleration);
 
-    task_.enable();
+    enable();
 }
 
 void TaskStepperTMC2208::setPosition(int32_t steps)
@@ -75,9 +64,3 @@ void TaskStepperTMC2208::setSpeed(float speed)
 {
     motor_->setMaxSpeed(speed);
 }
-
-TaskStepperTMC2208& TaskStepperTMC2208::instance()
-{
-    return *instance_;
-}
-

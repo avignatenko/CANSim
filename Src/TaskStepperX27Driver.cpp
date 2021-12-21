@@ -4,32 +4,19 @@
 
 constexpr int kTotalSteps = 315 * 12;
 
-void TaskStepperX27Driver::loopStepperCallbackStatic()
-{
-    TaskStepperX27Driver& me = TaskStepperX27Driver::instance();
-    me.loopStepperCallback();
-}
-
-void TaskStepperX27Driver::loopStepperCallback()
+bool TaskStepperX27Driver::Callback()
 {
     motor_->run();
 }
 
-TaskStepperX27Driver* TaskStepperX27Driver::instance_ = nullptr;
-
 TaskStepperX27Driver::TaskStepperX27Driver(Scheduler& sh, byte step, byte dir, byte reset)
-    : task_(TASK_IMMEDIATE, TASK_FOREVER, &loopStepperCallbackStatic, &sh, false)
+    : Task(TASK_IMMEDIATE, TASK_FOREVER, &sh, false)
 {
     // standard X25.168 range 315 degrees at 1/3 degree steps, but 1/12 degree with driver
     motor_ = new AccelStepper(AccelStepper::DRIVER, step, dir);
 
     motor_->setPinsInverted(true);  // invert direction
     motor_->setEnablePin(reset);
-}
-
-void TaskStepperX27Driver::init(Scheduler& sh, byte step, byte dir, byte reset)
-{
-    instance_ = new TaskStepperX27Driver(sh, step, dir, reset);
 }
 
 void TaskStepperX27Driver::start()
@@ -52,7 +39,7 @@ void TaskStepperX27Driver::start()
     motor_->setMaxSpeed(kMaxSpeed);
     motor_->setAcceleration(kAcceleration);
 
-    task_.enable();
+    enable();
 }
 
 void TaskStepperX27Driver::setPosition(int16_t steps)
@@ -68,9 +55,4 @@ int16_t TaskStepperX27Driver::position() const
 uint16_t TaskStepperX27Driver::totalSteps() const
 {
     return kTotalSteps;
-}
-
-TaskStepperX27Driver& TaskStepperX27Driver::instance()
-{
-    return *instance_;
 }

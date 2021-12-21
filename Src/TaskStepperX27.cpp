@@ -2,31 +2,18 @@
 
 #include <SwitecX25.h>
 
-void TaskStepperX27::loopStepperCallbackStatic()
-{
-    TaskStepperX27& me = TaskStepperX27::instance();
-    me.loopStepperCallback();
-}
-
-void TaskStepperX27::loopStepperCallback()
+bool TaskStepperX27::Callback()
 {
     motor_->update();
 }
 
-TaskStepperX27* TaskStepperX27::instance_ = nullptr;
-
 TaskStepperX27::TaskStepperX27(Scheduler& sh, byte p1, byte p2, byte p3, byte p4)
-    : task_(1 * TASK_MILLISECOND, TASK_FOREVER, &loopStepperCallbackStatic, &sh, false)
+    : Task(1 * TASK_MILLISECOND, TASK_FOREVER,  &sh, false)
 {
     // standard X25.168 range 315 degrees at 1/3 degree steps
     // FIXME: solder in proper way, to have A0, A1, A2, A3!
     // https://guy.carpenter.id.au/gaugette/2012/04/04/making-wiring-harnesses/
     motor_ = new SwitecX25(315 * 3, p1, p2, p3, p4);
-}
-
-void TaskStepperX27::init(Scheduler& sh, byte p1, byte p2, byte p3, byte p4)
-{
-    instance_ = new TaskStepperX27(sh, p1, p2, p3, p4);
 }
 
 void TaskStepperX27::start()
@@ -43,7 +30,7 @@ void TaskStepperX27::start()
 
     setPosition(0);
 
-    task_.enable();
+    enable();
 }
 
 void TaskStepperX27::setPosition(uint16_t steps)
@@ -54,9 +41,4 @@ void TaskStepperX27::setPosition(uint16_t steps)
 uint16_t TaskStepperX27::totalSteps() const
 {
     return motor_->steps;
-}
-
-TaskStepperX27& TaskStepperX27::instance()
-{
-    return *instance_;
 }

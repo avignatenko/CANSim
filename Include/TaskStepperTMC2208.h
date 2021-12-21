@@ -4,12 +4,11 @@
 
 class AccelStepper;
 
-class TaskStepperTMC2208
+class TaskStepperTMC2208 : private Task
 {
 public:
-    static void init(Scheduler& sh, byte step, byte dir, byte reset, float speed, float acceleration);
-    static TaskStepperTMC2208& instance();
-
+    TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset, float speed, float acceleration);
+   
     void start();
 
     void stop();
@@ -20,15 +19,12 @@ public:
     void setSpeed(float speed);
 
 private:
-    TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset, float speed, float acceleration);
-
-    void loopStepperCallback();
-    static void loopStepperCallbackStatic();
+  
+    bool Callback() override;
 
 private:
     static TaskStepperTMC2208* instance_;
 
-    Task task_;
 
     AccelStepper* motor_;
 };

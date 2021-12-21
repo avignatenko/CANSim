@@ -4,11 +4,10 @@
 
 class SwitecX25;
 
-class TaskStepperX27
+class TaskStepperX27: private Task
 {
 public:
-    static void init(Scheduler& sh, byte p1, byte p2, byte p3, byte p4);
-    static TaskStepperX27& instance();
+    TaskStepperX27(Scheduler& sh, byte p1, byte p2, byte p3, byte p4);
 
     void start();
 
@@ -16,15 +15,9 @@ public:
     uint16_t totalSteps() const;
 
 private:
-    TaskStepperX27(Scheduler& sh, byte p1, byte p2, byte p3, byte p4);
-
-    void loopStepperCallback();
-    static void loopStepperCallbackStatic();
-
+  
+    bool Callback() override;
+  
 private:
-    static TaskStepperX27* instance_;
-
-    Task task_;
-
     SwitecX25* motor_;
 };
