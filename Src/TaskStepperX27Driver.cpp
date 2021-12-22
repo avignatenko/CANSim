@@ -7,6 +7,7 @@ constexpr int kTotalSteps = 315 * 12;
 bool TaskStepperX27Driver::Callback()
 {
     motor_->run();
+    return true;
 }
 
 TaskStepperX27Driver::TaskStepperX27Driver(Scheduler& sh, byte step, byte dir, byte reset)

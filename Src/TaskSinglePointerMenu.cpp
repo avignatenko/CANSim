@@ -1,3 +1,4 @@
+#if 0
 #include "TaskSinglePointerMenu.h"
 
 #include <SerialCommands.h>
@@ -74,3 +75,5 @@ void TaskSinglePointerMenu::setInteractiveCallback(InteractiveCallback callback)
 {
     interactiveCallback_ = callback;
 }
+
+#endif

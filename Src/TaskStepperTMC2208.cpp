@@ -5,6 +5,7 @@
 bool TaskStepperTMC2208::Callback()
 {
     motor_->run();
+    return true;
 }
 
 TaskStepperTMC2208* TaskStepperTMC2208::instance_ = nullptr;
