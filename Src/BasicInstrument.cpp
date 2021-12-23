@@ -19,6 +19,8 @@ BasicInstrument::BasicInstrument(byte ledPin, byte buttonPin, byte canSPIPin, by
 
     varAddrIdx_ = addVar("addr");
     taskCAN_.setSimAddress(getVar(varAddrIdx_));
+
+    vars_.reserve(20);
 }
 
 void BasicInstrument::setup()

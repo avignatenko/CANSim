@@ -23,7 +23,7 @@ bool TaskButton::Callback()
 TaskButton* TaskButton::instance_ = nullptr;
 
 TaskButton::TaskButton(Scheduler& sh, byte ledPort)
-    : button_(new Bounce2::Button()), Task(5 * TASK_MILLISECOND, TASK_FOREVER, &sh, false)
+    : Task(5 * TASK_MILLISECOND, TASK_FOREVER, &sh, false), button_(new Bounce2::Button())
 {
     button_->attach(ledPort, INPUT_PULLUP);
     button_->interval(20);

@@ -25,7 +25,7 @@ bool TaskErrorLed::Callback()
 }
 
 TaskErrorLed::TaskErrorLed(Scheduler& sh, byte ledPort)
-    : ledPort_(ledPort), Task(TASK_IMMEDIATE, TASK_FOREVER, &sh, false)
+    : Task(TASK_IMMEDIATE, TASK_FOREVER, &sh, false), ledPort_(ledPort)
 {
     pinMode(ledPort_, OUTPUT);
 }

@@ -2,7 +2,6 @@
 
 #include "Common.h"
 
-#include <Array.h>
 #include <SerialCommands.h>
 
 class TaskMenu : private Task

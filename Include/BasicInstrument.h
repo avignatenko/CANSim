@@ -2,6 +2,7 @@
 
 #include "Common.h"
 
+#include "StoredLUT.h"
 #include "TaskButton.h"
 #include "TaskCAN.h"
 #include "TaskErrorLed.h"
@@ -22,6 +23,9 @@ protected:
     void setVar(byte idx, float value);
 
     virtual void onVarSet(int idx, float value);
+
+    byte addLUT(const char* name, byte maxSize);
+    StoredLUT& getLUT(byte idx);
 
 protected:
     byte varAddrIdx_ = 0;
@@ -49,5 +53,5 @@ private:
         const char* name = "";
     };
 
-    Array<Var, 20> vars_;
+    std::vector<Var> vars_;
 };

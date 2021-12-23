@@ -1,19 +1,21 @@
 #pragma once
 #include "Common.h"
 
-#include <Array.h>
 #include <EEPROM.h>
 
-template <int EEPROM_IDX, int SIZE = 20>
+#include <ArduinoSTL.h>
+
+#include <vector>
+
 class StoredLUT : public Printable
 {
 public:
-    StoredLUT() {}
+    StoredLUT(byte size) : xValues_(size), yValues_(size) {}
 
     ~StoredLUT() {}
 
-    double* x() { return xValues_.data(); }
-    double* y() { return yValues_.data(); }
+    double* x() { return &xValues_[0]; }
+    double* y() { return &yValues_[0]; }
 
     size_t size() { return xValues_.size(); }
     size_t maxSize() const { return xValues_.max_size(); }
@@ -25,7 +27,8 @@ public:
     }
 
     bool removeValue(double x)
-    {  // find spot
+    {
+        // find spot
         int idx = xValues_.size();
         for (int i = 0; i < (int)xValues_.size(); ++i)
         {
@@ -37,7 +40,7 @@ public:
         }
         if (idx == (int)xValues_.size()) return false;
 
-        xValues_.remove(idx);
+        xValues_.erase(xValues_.begin() + idx);
         return true;
     }
 
@@ -86,9 +89,9 @@ public:
         return r;
     }
 
-    bool load()
+    bool load(int eepromIdx)
     {
-        int idx = EEPROM_IDX;
+        int idx = eepromIdx;
 
         byte size = 255;
         EEPROM.get(idx, size);
@@ -113,9 +116,9 @@ public:
         return true;
     }
 
-    void save()
+    void save(int eepromIdx)
     {
-        int idx = EEPROM_IDX;
+        int idx = eepromIdx;
         byte size = xValues_.size();
         EEPROM.put(idx, size);
         idx += sizeof(size);
@@ -130,6 +133,6 @@ public:
     }
 
 private:
-    Array<double, SIZE> xValues_;
-    Array<double, SIZE> yValues_;
+    std::vector<double> xValues_;
+    std::vector<double> yValues_;
 };
