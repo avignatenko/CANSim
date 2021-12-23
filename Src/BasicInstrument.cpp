@@ -188,7 +188,7 @@ void BasicInstrument::onLutAction(byte lutIdx, LutAction action)
         return;
     }
 
-    if (action.cmd == BasicInstrument::LUTCommand::Set)
+    if (action.cmd == BasicInstrument::LUTCommand::Set || action.cmd == BasicInstrument::LUTCommand::SetX)
     {
         if (action.pos < 0) action.pos = posForLut(lutIdx);
 
@@ -198,7 +198,10 @@ void BasicInstrument::onLutAction(byte lutIdx, LutAction action)
             return;
         }
 
-        lut.addValue(action.posl, action.pos);
+        if (action.cmd == BasicInstrument::LUTCommand::Set)
+            lut.addValue(action.posl, action.pos);
+        else
+            lut.addValue(action.pos, action.posl);
 
         Serial.print("Set ");
         Serial.print(action.posl);
@@ -232,13 +235,13 @@ BasicInstrument::LutAction BasicInstrument::lutAction(SerialCommands* sender)
     if (strcmp(commandStr, "save") == 0) action.cmd = LUTCommand::Save;
     if (strcmp(commandStr, "load") == 0) action.cmd = LUTCommand::Load;
     if (strcmp(commandStr, "clear") == 0) action.cmd = LUTCommand::Clear;
-    if (strcmp(commandStr, "set") == 0)
+    if (strcmp(commandStr, "set") == 0 || strcmp(commandStr, "setx") == 0)
     {
-        action.cmd = LUTCommand::Set;
+        action.cmd = (strcmp(commandStr, "set") == 0) ? LUTCommand::Set : LUTCommand::SetX;
         const char* poslStr = sender->Next();
         if (!poslStr)
         {
-            sender->GetSerial()->println("Error: set needs logical position");
+            sender->GetSerial()->println(F("Error: set needs logical position"));
             return;
         }
 
@@ -253,7 +256,7 @@ BasicInstrument::LutAction BasicInstrument::lutAction(SerialCommands* sender)
         const char* poslStr = sender->Next();
         if (!poslStr)
         {
-            sender->GetSerial()->println("Error: set needs logical position");
+            sender->GetSerial()->println(F("Error: rm needs logical position"));
             return;
         }
 
@@ -326,6 +329,7 @@ float BasicInstrument::getVar(byte idx)
 void BasicInstrument::setVar(byte idx, float value)
 {
     EEPROM.put(kOffsetVars + idx * sizeof(float), value);
+    onVarSet(idx, value);
 }
 
 void BasicInstrument::onVarSet(int idx, float value)

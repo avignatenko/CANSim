@@ -48,7 +48,7 @@ public:
         return true;
     }
 
-    void addValue(double x, int y)
+    void addValue(double x, double y)
     {
         // find spot
         int idx = xValues_.size();

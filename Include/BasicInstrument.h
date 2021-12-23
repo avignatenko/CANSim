@@ -59,6 +59,7 @@ private:
         Save,
         Clear,
         Set,
+        SetX,
         Remove
     };
 
