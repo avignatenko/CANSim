@@ -10,7 +10,11 @@
 class StoredLUT : public Printable
 {
 public:
-    StoredLUT(byte size) : xValues_(size), yValues_(size) {}
+    StoredLUT(byte maxSize)
+    {
+        xValues_.reserve(maxSize);
+        yValues_.reserve(maxSize);
+    }
 
     ~StoredLUT() {}
 
@@ -18,7 +22,7 @@ public:
     double* y() { return &yValues_[0]; }
 
     size_t size() { return xValues_.size(); }
-    size_t maxSize() const { return xValues_.max_size(); }
+    size_t maxSize() const { return xValues_.capacity(); }
 
     void clear()
     {
