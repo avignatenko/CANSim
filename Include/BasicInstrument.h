@@ -29,6 +29,9 @@ protected:
 
     virtual int32_t posForLut(int idx) { return -1; }
 
+    byte addPos(const char* name);
+    virtual void setPos(byte idx, int32_t value, bool absolute = true) {}
+
 protected:
     byte varAddrIdx_ = 0;
 
@@ -42,14 +45,37 @@ private:
     void onButtonPressed(bool pressed);
 
     void helpCallback(SerialCommands* sender);
-    void errorCallback(SerialCommands* sender, const char* command);
-    void varCallback(SerialCommands* sender);
-    void lutCallback(SerialCommands* sender);
-
-    static void cmdErrorCallback(SerialCommands* sender, const char* command, void* data);
-    static void cmdVarCallback(SerialCommands* sender, void* data);
-    static void cmdLutCallback(SerialCommands* sender, void* data);
     static void cmdHelpCallback(SerialCommands* sender, void* data);
+
+    void errorCallback(SerialCommands* sender, const char* command);
+    static void cmdErrorCallback(SerialCommands* sender, const char* command, void* data);
+
+    void varCallback(SerialCommands* sender);
+    static void cmdVarCallback(SerialCommands* sender, void* data);
+
+    void lutCallback(SerialCommands* sender);
+    static void cmdLutCallback(SerialCommands* sender, void* data);
+
+    void posCallback(SerialCommands* sender);
+    static void cmdPosCallback(SerialCommands* sender, void* data);
+
+    void lPosCallback(SerialCommands* sender);
+    static void cmdLPosCallback(SerialCommands* sender, void* data);
+
+    void actCallback(SerialCommands* sender);
+    static void cmdActCallback(SerialCommands* sender, void* data);
+
+    void cCWCallback(SerialCommands* sender);
+    static void cmdCCWCallback(SerialCommands* sender, void* data);
+
+    void cCWFastCallback(SerialCommands* sender);
+    static void cmdCCWFastCallback(SerialCommands* sender, void* data);
+
+    void cWCallback(SerialCommands* sender);
+    static void cmdCWCallback(SerialCommands* sender, void* data);
+
+    void cWFastCallback(SerialCommands* sender);
+    static void cmdCWFastCallback(SerialCommands* sender, void* data);
 
     enum class LUTCommand
     {
@@ -91,4 +117,6 @@ private:
     };
 
     std::vector<Lut> luts_;
+
+    byte activeMotor_ = 0;
 };

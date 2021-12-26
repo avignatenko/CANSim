@@ -12,15 +12,31 @@ BasicInstrument::BasicInstrument(byte ledPin, byte buttonPin, byte canSPIPin, by
 {
     taskButton_.setPressedCallback(fastdelegate::MakeDelegate(this, &BasicInstrument::onButtonPressed));
 
+    taskMenu_.cmdLine().SetDefaultHandler(&BasicInstrument::cmdErrorCallback, this);
+
+    // fixme: move to member
     static SerialCommand s_cmdHelp("help", &BasicInstrument::cmdHelpCallback, false, this);
     static SerialCommand s_cmdAddr("var", &BasicInstrument::cmdVarCallback, false, this);
     static SerialCommand s_cmdLut("lut", &BasicInstrument::cmdLutCallback, false, this);
+    static SerialCommand s_cmdPos("pos", &BasicInstrument::cmdPosCallback, false, this);
+    static SerialCommand s_cmdLPos("lpos", &BasicInstrument::cmdLPosCallback, false, this);
+    static SerialCommand s_cmdAct("act", &BasicInstrument::cmdActCallback, false, this);
+    static SerialCommand s_cmdPosCCW("q", &BasicInstrument::cmdCCWCallback, true, this);
+    static SerialCommand s_cmdPosCCWFast("Q", &BasicInstrument::cmdCCWFastCallback, true, this);
+    static SerialCommand s_cmdPosCW("w", &BasicInstrument::cmdCWCallback, true, this);
+    static SerialCommand s_cmdPosCWFast("W", &BasicInstrument::cmdCWFastCallback, true, this);
 
     taskMenu_.cmdLine().AddCommand(&s_cmdHelp);
     taskMenu_.cmdLine().AddCommand(&s_cmdAddr);
     taskMenu_.cmdLine().AddCommand(&s_cmdLut);
 
-    taskMenu_.cmdLine().SetDefaultHandler(&BasicInstrument::cmdErrorCallback, this);
+    taskMenu_.cmdLine().AddCommand(&s_cmdPos);
+    taskMenu_.cmdLine().AddCommand(&s_cmdLPos);
+    taskMenu_.cmdLine().AddCommand(&s_cmdAct);
+    taskMenu_.cmdLine().AddCommand(&s_cmdPosCCW);
+    taskMenu_.cmdLine().AddCommand(&s_cmdPosCCWFast);
+    taskMenu_.cmdLine().AddCommand(&s_cmdPosCW);
+    taskMenu_.cmdLine().AddCommand(&s_cmdPosCWFast);
 
     varAddrIdx_ = addVar("addr");
     taskCAN_.setSimAddress(getVar(varAddrIdx_));
@@ -279,6 +295,10 @@ Help:
  help - this help text
  var [name] [value] get/set device variable
  lut [name] [command] [value1] [value2] update lut(s)
+ act [name] activate motor to use with pos/lpos
+ pos [value] get/set motor position
+ lpos [name_lut] get/set logical motor position
+ q,Q,w,W - (single key commands) move motor needle (q,w - slow, Q,W - fast)
 )=====");
 
     Stream* s = sender->GetSerial();
@@ -310,6 +330,68 @@ void BasicInstrument::cmdErrorCallback(SerialCommands* sender, const char* comma
 {
     auto* me = reinterpret_cast<BasicInstrument*>(data);
     me->errorCallback(sender, command);
+}
+
+void BasicInstrument::posCallback(SerialCommands* sender) {}
+void BasicInstrument::cmdPosCallback(SerialCommands* sender, void* data)
+{
+    auto* me = reinterpret_cast<BasicInstrument*>(data);
+    me->posCallback(sender);
+}
+
+void BasicInstrument::lPosCallback(SerialCommands* sender) {}
+
+void BasicInstrument::cmdLPosCallback(SerialCommands* sender, void* data)
+{
+    auto* me = reinterpret_cast<BasicInstrument*>(data);
+    me->lPosCallback(sender);
+}
+
+void BasicInstrument::actCallback(SerialCommands* sender) {}
+void BasicInstrument::cmdActCallback(SerialCommands* sender, void* data)
+{
+    auto* me = reinterpret_cast<BasicInstrument*>(data);
+    me->actCallback(sender);
+}
+
+void BasicInstrument::cCWCallback(SerialCommands* sender)
+{
+    setPos(activeMotor_, -1, false);
+}
+void BasicInstrument::cmdCCWCallback(SerialCommands* sender, void* data)
+{
+    auto* me = reinterpret_cast<BasicInstrument*>(data);
+    me->cCWCallback(sender);
+}
+
+void BasicInstrument::cCWFastCallback(SerialCommands* sender)
+{
+    setPos(activeMotor_, -10, false);
+}
+void BasicInstrument::cmdCCWFastCallback(SerialCommands* sender, void* data)
+{
+    auto* me = reinterpret_cast<BasicInstrument*>(data);
+    me->cCWFastCallback(sender);
+}
+
+void BasicInstrument::cWCallback(SerialCommands* sender)
+{
+    setPos(activeMotor_, 1, false);
+}
+void BasicInstrument::cmdCWCallback(SerialCommands* sender, void* data)
+{
+    auto* me = reinterpret_cast<BasicInstrument*>(data);
+    me->cWCallback(sender);
+}
+
+void BasicInstrument::cWFastCallback(SerialCommands* sender)
+{
+    setPos(activeMotor_, 10, false);
+}
+void BasicInstrument::cmdCWFastCallback(SerialCommands* sender, void* data)
+{
+    auto* me = reinterpret_cast<BasicInstrument*>(data);
+    me->cWFastCallback(sender);
 }
 
 byte BasicInstrument::addVar(const char* name)
