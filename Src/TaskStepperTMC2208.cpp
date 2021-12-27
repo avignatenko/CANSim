@@ -8,8 +8,6 @@ bool TaskStepperTMC2208::Callback()
     return true;
 }
 
-TaskStepperTMC2208* TaskStepperTMC2208::instance_ = nullptr;
-
 TaskStepperTMC2208::TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset, float speed, float acceleration)
     : Task(TASK_IMMEDIATE, TASK_FOREVER, &sh, false)
 {

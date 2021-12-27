@@ -10,8 +10,8 @@ TaskMenu::TaskMenu(Scheduler& sh)
 
 bool TaskMenu::Callback()
 {
-    int received = Serial.peek();
-    if (received >= 0) Serial.print((char)received);
+    char received = Serial.peek();
+    if (received >= 0) Serial.print(received);
 
     cmdLine_.ReadSerial();
 

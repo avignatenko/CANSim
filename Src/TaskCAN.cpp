@@ -10,7 +10,7 @@ bool TaskCAN::loopCANReceiveCallback()
         static byte buf[8];
         // check if data coming
         uint32_t id;
-        int result = mcpCAN_->readMsgBuf(&id, &len, buf);  // read data,  len: data length, buf: data buf
+        byte result = mcpCAN_->readMsgBuf(&id, &len, buf);  // read data,  len: data length, buf: data buf
         if (result != CAN_OK)
         {
             return true;
@@ -24,7 +24,7 @@ bool TaskCAN::loopCANReceiveCallback()
 
 bool TaskCAN::loopCANCheckCallback()
 {
-    int error = mcpCAN_->checkError();
+    byte error = mcpCAN_->checkError();
 
     if (error != 0)
     {
@@ -52,7 +52,7 @@ void TaskCAN::start()
 {
     pinMode(intPort_, INPUT);
 
-    int retriesLeft = 5;
+    byte retriesLeft = 5;
     for (; retriesLeft >= 0; --retriesLeft)
     {
         if (CAN_OK == mcpCAN_->begin(MCP_STDEXT, CAN_500KBPS, MCP_16MHZ))  // init can bus : baudrate = 500k

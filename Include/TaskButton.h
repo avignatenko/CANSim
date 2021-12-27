@@ -22,8 +22,6 @@ private:
     bool Callback() override;
 
 private:
-    static TaskButton* instance_;
-
     Bounce2::Button* button_;
     fastdelegate::FastDelegate1<bool> callback_;
 };

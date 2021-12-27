@@ -21,12 +21,10 @@ protected:
     byte addVar(const char* name);
     float getVar(byte idx);
     void setVar(byte idx, float value);
-
     virtual void onVarSet(int idx, float value);
 
     byte addLUT(const char* name, byte maxSize);
     StoredLUT& getLUT(byte idx);
-
     virtual int32_t posForLut(int idx) { return -1; }
 
     byte addPos(const char* name);
@@ -77,7 +75,7 @@ private:
     void cWFastCallback(SerialCommands* sender);
     static void cmdCWFastCallback(SerialCommands* sender, void* data);
 
-    enum class LUTCommand
+    enum class LUTCommand : byte
     {
         Invalid,
         Show,

@@ -132,9 +132,14 @@ void BasicInstrument::lutCallback(SerialCommands* sender)
     if (!nameStr)
     {
         // list all luts with their values
+        for (byte i = 0; i < (byte)luts_.size(); ++i)
+        {
+            s.println();
+            s.println(luts_[i].name);
+            s.println(luts_[i].lut);
+        }
         return;
     }
-
     // find this lut
     int idx = -1;
     for (int i = 0; i < (int)luts_.size(); ++i)
@@ -147,7 +152,7 @@ void BasicInstrument::lutCallback(SerialCommands* sender)
     }
     if (idx < 0)
     {
-        sender->GetSerial()->println(F("Error: no such lut"));
+        s.println(F("Error: no such lut"));
         return;
     }
 
@@ -155,7 +160,7 @@ void BasicInstrument::lutCallback(SerialCommands* sender)
 
     if (action.cmd == LUTCommand::Invalid)
     {
-        sender->GetSerial()->println("Error: unknown command");
+        s.println(F("Error: unknown command"));
         return;
     }
 
@@ -164,7 +169,6 @@ void BasicInstrument::lutCallback(SerialCommands* sender)
 
 int BasicInstrument::lutOffset(int idx)
 {
-    StoredLUT& lut = getLUT(idx);
     int offset = kOffsetVars + sizeof(float) * kMaxVars;
     for (int i = 0; i < idx; ++i)
     {
@@ -210,7 +214,7 @@ void BasicInstrument::onLutAction(byte lutIdx, LutAction action)
 
         if (lut.size() == lut.maxSize())
         {
-            Serial.println("Error: max LUT capacity reached");
+            Serial.println(F("Error: max LUT capacity reached"));
             return;
         }
 
@@ -258,7 +262,7 @@ BasicInstrument::LutAction BasicInstrument::lutAction(SerialCommands* sender)
         if (!poslStr)
         {
             sender->GetSerial()->println(F("Error: set needs logical position"));
-            return;
+            return action;
         }
 
         action.posl = atof(poslStr);
@@ -273,7 +277,7 @@ BasicInstrument::LutAction BasicInstrument::lutAction(SerialCommands* sender)
         if (!poslStr)
         {
             sender->GetSerial()->println(F("Error: rm needs logical position"));
-            return;
+            return action;
         }
 
         action.posl = atof(poslStr);
@@ -332,14 +336,20 @@ void BasicInstrument::cmdErrorCallback(SerialCommands* sender, const char* comma
     me->errorCallback(sender, command);
 }
 
-void BasicInstrument::posCallback(SerialCommands* sender) {}
+void BasicInstrument::posCallback(SerialCommands* sender)
+{
+    // no-op
+}
 void BasicInstrument::cmdPosCallback(SerialCommands* sender, void* data)
 {
     auto* me = reinterpret_cast<BasicInstrument*>(data);
     me->posCallback(sender);
 }
 
-void BasicInstrument::lPosCallback(SerialCommands* sender) {}
+void BasicInstrument::lPosCallback(SerialCommands* sender)
+{
+    // no-op
+}
 
 void BasicInstrument::cmdLPosCallback(SerialCommands* sender, void* data)
 {
@@ -426,6 +436,7 @@ byte BasicInstrument::addLUT(const char* name, byte maxSize)
 {
     Lut lut(name, maxSize);
     luts_.push_back(lut);
+    return luts_.size() - 1;
 }
 
 StoredLUT& BasicInstrument::getLUT(byte idx)

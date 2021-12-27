@@ -61,7 +61,7 @@ private:
     TaskWithClassCallback taskCANCheckError_;
     MCP_CAN* mcpCAN_;
     uint16_t simaddress_;  // 0 .. 1023
-    int intPort_;
+    byte intPort_;
 
     fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback_ = nullptr;
 };

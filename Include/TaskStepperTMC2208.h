@@ -19,12 +19,8 @@ public:
     void setSpeed(float speed);
 
 private:
-  
     bool Callback() override;
 
 private:
-    static TaskStepperTMC2208* instance_;
-
-
     AccelStepper* motor_;
 };
