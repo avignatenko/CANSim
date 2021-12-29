@@ -4,14 +4,38 @@
 const int kOffsetVars = 0;
 const int kMaxVars = 20;
 
-BasicInstrument::BasicInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin)
+CommonInstrument::CommonInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin)
     : taskErrorLed_(taskManager_, ledPin),
       taskButton_(taskManager_, buttonPin),
-      taskCAN_(taskErrorLed_, taskManager_, canSPIPin, canIntPin, 0),
-      taskMenu_(taskManager_)
+      taskCAN_(taskErrorLed_, taskManager_, canSPIPin, canIntPin, 0)
 {
-    taskButton_.setPressedCallback(fastdelegate::MakeDelegate(this, &BasicInstrument::onButtonPressed));
+    taskButton_.setPressedCallback(fastdelegate::MakeDelegate(this, &CommonInstrument::onButtonPressed));
+}
 
+void CommonInstrument::onButtonPressed(bool pressed)
+{
+    if (pressed)
+        taskErrorLed_.addError(TaskErrorLed::ERROR_TEST_LED);
+    else
+        taskErrorLed_.removeError(TaskErrorLed::ERROR_TEST_LED);
+}
+
+void CommonInstrument::setup()
+{
+    // start services
+    taskErrorLed_.start();
+    taskButton_.start();
+    taskCAN_.start();
+}
+
+void CommonInstrument::run()
+{
+    taskManager_.execute();
+}
+
+BasicInstrument::BasicInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin)
+    : CommonInstrument(ledPin, buttonPin, canSPIPin, canIntPin), taskMenu_(taskManager_)
+{
     taskMenu_.cmdLine().SetDefaultHandler(&BasicInstrument::cmdErrorCallback, this);
 
     // fixme: move to member
@@ -46,6 +70,8 @@ BasicInstrument::BasicInstrument(byte ledPin, byte buttonPin, byte canSPIPin, by
 
 void BasicInstrument::setup()
 {
+    CommonInstrument::setup();
+
     // load luts
     for (byte i = 0; i < (byte)luts_.size(); ++i)
     {
@@ -53,23 +79,7 @@ void BasicInstrument::setup()
     }
 
     // start services
-    taskErrorLed_.start();
-    taskButton_.start();
-    taskCAN_.start();
     taskMenu_.start();
-}
-
-void BasicInstrument::run()
-{
-    taskManager_.execute();
-}
-
-void BasicInstrument::onButtonPressed(bool pressed)
-{
-    if (pressed)
-        taskErrorLed_.addError(TaskErrorLed::ERROR_TEST_LED);
-    else
-        taskErrorLed_.removeError(TaskErrorLed::ERROR_TEST_LED);
 }
 
 void BasicInstrument::cmdVarCallback(SerialCommands* sender, void* data)
@@ -421,11 +431,6 @@ float BasicInstrument::getVar(byte idx)
 void BasicInstrument::setVar(byte idx, float value)
 {
     EEPROM.put(kOffsetVars + idx * sizeof(float), value);
-    onVarSet(idx, value);
-}
-
-void BasicInstrument::onVarSet(int idx, float value)
-{
     if (idx == varAddrIdx_)  // addr
     {
         taskCAN_.setSimAddress((uint16_t)value);

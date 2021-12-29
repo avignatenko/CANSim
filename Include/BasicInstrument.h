@@ -10,18 +10,33 @@
 
 #include "FastDelegate.h"
 
-class BasicInstrument
+class CommonInstrument
+{
+public:
+    CommonInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin);
+    virtual void setup();
+    void run();
+
+protected:
+    Scheduler taskManager_;
+    TaskErrorLed taskErrorLed_;
+    TaskButton taskButton_;
+    TaskCAN taskCAN_;
+
+private:
+    virtual void onButtonPressed(bool pressed);
+};
+
+class BasicInstrument : public CommonInstrument
 {
 public:
     BasicInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin);
     virtual void setup();
-    virtual void run();
 
 protected:
     byte addVar(const char* name);
     float getVar(byte idx);
-    void setVar(byte idx, float value);
-    virtual void onVarSet(int idx, float value);
+    virtual void setVar(byte idx, float value);
 
     byte addLUT(const char* name, byte maxSize);
     StoredLUT& getLUT(byte idx);
@@ -33,15 +48,9 @@ protected:
 protected:
     byte varAddrIdx_ = 0;
 
-    Scheduler taskManager_;
-    TaskErrorLed taskErrorLed_;
-    TaskButton taskButton_;
-    TaskCAN taskCAN_;
     TaskMenu taskMenu_;
 
 private:
-    void onButtonPressed(bool pressed);
-
     void helpCallback(SerialCommands* sender);
     static void cmdHelpCallback(SerialCommands* sender, void* data);
 
