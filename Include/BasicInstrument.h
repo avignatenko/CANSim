@@ -18,13 +18,17 @@ public:
     void run();
 
 protected:
+    virtual void onButtonPressed(bool pressed);
+    virtual void onCANReceived(byte priority, byte port, uint16_t srcAddress, uint16_t dstAddress, byte len,
+                               byte* payload)
+    {
+    }
+
+protected:
     Scheduler taskManager_;
     TaskErrorLed taskErrorLed_;
     TaskButton taskButton_;
     TaskCAN taskCAN_;
-
-private:
-    virtual void onButtonPressed(bool pressed);
 };
 
 class BasicInstrument : public CommonInstrument

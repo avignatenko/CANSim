@@ -10,6 +10,7 @@ CommonInstrument::CommonInstrument(byte ledPin, byte buttonPin, byte canSPIPin, 
       taskCAN_(taskErrorLed_, taskManager_, canSPIPin, canIntPin, 0)
 {
     taskButton_.setPressedCallback(fastdelegate::MakeDelegate(this, &CommonInstrument::onButtonPressed));
+    taskCAN_.setReceiveCallback(fastdelegate::MakeDelegate(this, &CommonInstrument::onCANReceived));
 }
 
 void CommonInstrument::onButtonPressed(bool pressed)
