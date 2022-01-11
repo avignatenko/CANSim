@@ -146,7 +146,9 @@ void BasicInstrument::lutCallback(SerialCommands* sender)
         for (byte i = 0; i < (byte)luts_.size(); ++i)
         {
             s.println();
-            s.println(luts_[i].name);
+            s.print(luts_[i].name);
+            s.print(" max: ");
+            s.println(luts_[i].lut.maxSize());
             s.println(luts_[i].lut);
         }
         return;
@@ -325,6 +327,13 @@ Help:
         s->print(' ');
         s->println(vars_[i].name);
     }
+
+    s->println(F("LUTs:"));
+    for (int i = 0; i < (int)luts_.size(); ++i)
+    {
+        s->print(' ');
+        s->println(luts_[i].name);
+    }
 }
 
 void BasicInstrument::cmdHelpCallback(SerialCommands* sender, void* data)
@@ -349,8 +358,12 @@ void BasicInstrument::cmdErrorCallback(SerialCommands* sender, const char* comma
 
 void BasicInstrument::posCallback(SerialCommands* sender)
 {
-    // no-op
+    const char* commandStr = sender->Next();
+    int32_t pos = atoi(commandStr);
+
+    setPos(activeMotor_, pos);
 }
+
 void BasicInstrument::cmdPosCallback(SerialCommands* sender, void* data)
 {
     auto* me = reinterpret_cast<BasicInstrument*>(data);
@@ -359,7 +372,10 @@ void BasicInstrument::cmdPosCallback(SerialCommands* sender, void* data)
 
 void BasicInstrument::lPosCallback(SerialCommands* sender)
 {
-    // no-op
+    const char* commandStr = sender->Next();
+    float pos = atof(commandStr);
+
+    setLPos(activeMotor_, pos);
 }
 
 void BasicInstrument::cmdLPosCallback(SerialCommands* sender, void* data)
@@ -369,6 +385,7 @@ void BasicInstrument::cmdLPosCallback(SerialCommands* sender, void* data)
 }
 
 void BasicInstrument::actCallback(SerialCommands* sender) {}
+
 void BasicInstrument::cmdActCallback(SerialCommands* sender, void* data)
 {
     auto* me = reinterpret_cast<BasicInstrument*>(data);

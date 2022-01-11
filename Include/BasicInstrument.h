@@ -48,6 +48,7 @@ protected:
 
     byte addPos(const char* name);
     virtual void setPos(byte idx, int32_t value, bool absolute = true) {}
+    virtual void setLPos(byte idx, float value, bool absolute = true) {}
 
 protected:
     byte varAddrIdx_ = 0;

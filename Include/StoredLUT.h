@@ -16,6 +16,15 @@ public:
         yValues_.reserve(maxSize);
     }
 
+    StoredLUT(const StoredLUT& rhs)
+    {
+        xValues_.reserve(rhs.xValues_.capacity());
+        yValues_.reserve(rhs.yValues_.capacity());
+
+        xValues_ = rhs.xValues_;
+        yValues_ = rhs.yValues_;
+    }
+
     ~StoredLUT() {}
 
     double* x() { return &xValues_[0]; }
