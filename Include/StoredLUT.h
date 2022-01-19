@@ -108,7 +108,7 @@ public:
 
         byte size = 255;
         EEPROM.get(idx, size);
-        if (size == 255 || size == 0) return false;
+        if (size == 0 || size > maxSize()) return false;
 
         xValues_.clear();
         yValues_.clear();
