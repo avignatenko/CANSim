@@ -44,10 +44,11 @@ protected:
 
     byte addLUT(const char* name, byte maxSize);
     StoredLUT& getLUT(byte idx);
-    virtual int32_t posForLut(int idx) { return -1; }
+    virtual int32_t posForLut(byte idxLut) { return -1; }
 
     byte addPos(const char* name);
     virtual void setPos(byte idx, int32_t value, bool absolute = true) {}
+    virtual int32_t pos(byte idxPos) { return 0; }
     virtual void setLPos(byte idx, float value, bool absolute = true) {}
 
 protected:
@@ -129,6 +130,6 @@ private:
     };
 
     std::vector<Lut> luts_;
-
-    byte activeMotor_ = 0;
+    std::vector<const char*> poss_;
+    byte activePos_ = 0;
 };

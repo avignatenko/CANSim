@@ -73,7 +73,7 @@ void BasicInstrument::setup()
 {
     CommonInstrument::setup();
 
-    // load luts
+     // load luts
     for (byte i = 0; i < (byte)luts_.size(); ++i)
     {
         getLUT(i).load(lutOffset(i));
@@ -183,9 +183,9 @@ void BasicInstrument::lutCallback(SerialCommands* sender)
 int BasicInstrument::lutOffset(int idx)
 {
     int offset = kOffsetVars + sizeof(float) * kMaxVars;
-    for (int i = 0; i < idx; ++i)
+    for (int i = 1; i <= idx; ++i)
     {
-        offset += getLUT(i).maxSize();
+        offset += getLUT(i - 1).maxSize();
     }
     return offset;
 }
@@ -334,6 +334,13 @@ Help:
         s->print(' ');
         s->println(luts_[i].name);
     }
+
+    s->println(F("POSs:"));
+    for (int i = 0; i < (int)poss_.size(); ++i)
+    {
+        s->print(' ');
+        s->println(poss_[i]);
+    }
 }
 
 void BasicInstrument::cmdHelpCallback(SerialCommands* sender, void* data)
@@ -359,9 +366,17 @@ void BasicInstrument::cmdErrorCallback(SerialCommands* sender, const char* comma
 void BasicInstrument::posCallback(SerialCommands* sender)
 {
     const char* commandStr = sender->Next();
-    int32_t pos = atoi(commandStr);
+    if (commandStr)
+    {
+        int32_t pos = atoi(commandStr);
 
-    setPos(activeMotor_, pos);
+        setPos(activePos_, pos);
+    }
+    else
+    {
+        int32_t posValue = pos(activePos_);
+        sender->GetSerial()->println(posValue);
+    }
 }
 
 void BasicInstrument::cmdPosCallback(SerialCommands* sender, void* data)
@@ -375,7 +390,7 @@ void BasicInstrument::lPosCallback(SerialCommands* sender)
     const char* commandStr = sender->Next();
     float pos = atof(commandStr);
 
-    setLPos(activeMotor_, pos);
+    setLPos(activePos_, pos);
 }
 
 void BasicInstrument::cmdLPosCallback(SerialCommands* sender, void* data)
@@ -384,7 +399,27 @@ void BasicInstrument::cmdLPosCallback(SerialCommands* sender, void* data)
     me->lPosCallback(sender);
 }
 
-void BasicInstrument::actCallback(SerialCommands* sender) {}
+void BasicInstrument::actCallback(SerialCommands* sender)
+{
+    const char* commandStr = sender->Next();
+    if (commandStr)
+    {
+        for (int i = 0; i < poss_.size(); ++i)
+        {
+            if (strcmp(commandStr, poss_[i]) == 0)
+            {
+                activePos_ = i;
+                return;
+            }
+        }
+
+        sender->GetSerial()->println(F("Pos not found"));
+    }
+    else
+    {
+        sender->GetSerial()->println(activePos_);
+    }
+}
 
 void BasicInstrument::cmdActCallback(SerialCommands* sender, void* data)
 {
@@ -394,7 +429,7 @@ void BasicInstrument::cmdActCallback(SerialCommands* sender, void* data)
 
 void BasicInstrument::cCWCallback(SerialCommands* sender)
 {
-    setPos(activeMotor_, -1, false);
+    setPos(activePos_, -1, false);
 }
 void BasicInstrument::cmdCCWCallback(SerialCommands* sender, void* data)
 {
@@ -404,7 +439,7 @@ void BasicInstrument::cmdCCWCallback(SerialCommands* sender, void* data)
 
 void BasicInstrument::cCWFastCallback(SerialCommands* sender)
 {
-    setPos(activeMotor_, -10, false);
+    setPos(activePos_, -10, false);
 }
 void BasicInstrument::cmdCCWFastCallback(SerialCommands* sender, void* data)
 {
@@ -414,7 +449,7 @@ void BasicInstrument::cmdCCWFastCallback(SerialCommands* sender, void* data)
 
 void BasicInstrument::cWCallback(SerialCommands* sender)
 {
-    setPos(activeMotor_, 1, false);
+    setPos(activePos_, 1, false);
 }
 void BasicInstrument::cmdCWCallback(SerialCommands* sender, void* data)
 {
@@ -424,7 +459,7 @@ void BasicInstrument::cmdCWCallback(SerialCommands* sender, void* data)
 
 void BasicInstrument::cWFastCallback(SerialCommands* sender)
 {
-    setPos(activeMotor_, 10, false);
+    setPos(activePos_, 10, false);
 }
 void BasicInstrument::cmdCWFastCallback(SerialCommands* sender, void* data)
 {
@@ -432,37 +467,43 @@ void BasicInstrument::cmdCWFastCallback(SerialCommands* sender, void* data)
     me->cWFastCallback(sender);
 }
 
-byte BasicInstrument::addVar(const char* name)
-{
-    vars_.push_back(Var());
-    vars_.back().name = name;
-    return vars_.size() - 1;
-}
-
-float BasicInstrument::getVar(byte idx)
-{
-    float var;
-    EEPROM.get(kOffsetVars + idx * sizeof(float), var);
-    return var;
-}
-
-void BasicInstrument::setVar(byte idx, float value)
-{
-    EEPROM.put(kOffsetVars + idx * sizeof(float), value);
-    if (idx == varAddrIdx_)  // addr
+    byte BasicInstrument::addVar(const char* name)
     {
-        taskCAN_.setSimAddress((uint16_t)value);
+        vars_.push_back(Var());
+        vars_.back().name = name;
+        return vars_.size() - 1;
     }
-}
 
-byte BasicInstrument::addLUT(const char* name, byte maxSize)
-{
-    Lut lut(name, maxSize);
-    luts_.push_back(lut);
-    return luts_.size() - 1;
-}
+    float BasicInstrument::getVar(byte idx)
+    {
+        float var;
+        EEPROM.get(kOffsetVars + idx * sizeof(float), var);
+        return var;
+    }
 
-StoredLUT& BasicInstrument::getLUT(byte idx)
-{
-    return luts_[idx].lut;
-}
+    void BasicInstrument::setVar(byte idx, float value)
+    {
+        EEPROM.put(kOffsetVars + idx * sizeof(float), value);
+        if (idx == varAddrIdx_)  // addr
+        {
+            taskCAN_.setSimAddress((uint16_t)value);
+        }
+    }
+
+    byte BasicInstrument::addLUT(const char* name, byte maxSize)
+    {
+        Lut lut(name, maxSize);
+        luts_.push_back(lut);
+        return luts_.size() - 1;
+    }
+
+    StoredLUT& BasicInstrument::getLUT(byte idx)
+    {
+        return luts_[idx].lut;
+    }
+
+    byte BasicInstrument::addPos(const char* name)
+    {
+        poss_.push_back(name);
+        return poss_.size() - 1;
+    }
