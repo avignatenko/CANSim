@@ -147,7 +147,7 @@ void BasicInstrument::lutCallback(SerialCommands* sender)
         {
             s.println();
             s.print(luts_[i].name);
-            s.print(" max: ");
+            s.print(F(" max: "));
             s.println(luts_[i].lut.maxSize());
             s.println(luts_[i].lut);
         }
@@ -185,7 +185,7 @@ int BasicInstrument::lutOffset(int idx)
     int offset = kOffsetVars + sizeof(float) * kMaxVars;
     for (int i = 1; i <= idx; ++i)
     {
-        offset += getLUT(i - 1).maxSize();
+        offset += getLUT(i - 1).maxSize() * sizeof(float) * 2;
     }
     return offset;
 }
@@ -469,7 +469,7 @@ void BasicInstrument::cmdCWFastCallback(SerialCommands* sender, void* data)
 
     byte BasicInstrument::addVar(const char* name)
     {
-        vars_.push_back(Var());
+        vars_.resize(vars_.size() + 1);
         vars_.back().name = name;
         return vars_.size() - 1;
     }
@@ -492,8 +492,9 @@ void BasicInstrument::cmdCWFastCallback(SerialCommands* sender, void* data)
 
     byte BasicInstrument::addLUT(const char* name, byte maxSize)
     {
-        Lut lut(name, maxSize);
-        luts_.push_back(lut);
+        luts_.resize(luts_.size() + 1);
+        luts_.back().name = name;
+        luts_.back().lut.setMaxSize(maxSize);
         return luts_.size() - 1;
     }
 
@@ -504,6 +505,7 @@ void BasicInstrument::cmdCWFastCallback(SerialCommands* sender, void* data)
 
     byte BasicInstrument::addPos(const char* name)
     {
-        poss_.push_back(name);
+        poss_.resize(poss_.size() + 1);
+        poss_.back() = name;
         return poss_.size() - 1;
     }

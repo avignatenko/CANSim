@@ -10,29 +10,18 @@
 class StoredLUT : public Printable
 {
 public:
-    StoredLUT(byte maxSize)
-    {
-        xValues_.reserve(maxSize);
-        yValues_.reserve(maxSize);
-    }
-
-    StoredLUT(const StoredLUT& rhs)
-    {
-        xValues_.reserve(rhs.xValues_.capacity());
-        yValues_.reserve(rhs.yValues_.capacity());
-
-        xValues_ = rhs.xValues_;
-        yValues_ = rhs.yValues_;
-    }
-
-    ~StoredLUT() {}
+      ~StoredLUT() {}
 
     double* x() { return &xValues_[0]; }
     double* y() { return &yValues_[0]; }
 
     size_t size() { return xValues_.size(); }
     size_t maxSize() const { return xValues_.capacity(); }
-
+    void setMaxSize(byte maxSize)
+    {
+        xValues_.reserve(maxSize);
+        yValues_.reserve(maxSize);
+    }
     void clear()
     {
         xValues_.clear();
@@ -75,10 +64,10 @@ public:
             }
         }
 
-        xValues_.push_back(xValues_.back());
-        yValues_.push_back(yValues_.back());
+        xValues_.push_back(0);
+        yValues_.push_back(0);
 
-        for (int j = xValues_.size() - 2; j >= idx + 1; --j)
+        for (int j = xValues_.size() - 1; j >= idx + 1; --j)
         {
             xValues_[j] = xValues_[j - 1];
             yValues_[j] = yValues_[j - 1];

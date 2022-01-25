@@ -106,7 +106,7 @@ private:
     {
         LUTCommand cmd = LUTCommand::Invalid;
         float posl = -1.0;
-        int16_t pos = -1;
+        int32_t pos = -1;
     };
 
     LutAction lutAction(SerialCommands* sender);
@@ -123,8 +123,6 @@ private:
 
     struct Lut
     {
-        Lut(const char* name0, byte maxSize) : name(name0), lut(maxSize) {}
-
         const char* name = "";
         StoredLUT lut;
     };
