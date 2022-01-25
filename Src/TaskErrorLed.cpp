@@ -32,9 +32,9 @@ TaskErrorLed::TaskErrorLed(Scheduler& sh, byte ledPort)
 
 void TaskErrorLed::start()
 {
-    // test 2sec on
+    // test 1sec on
     led(true);
-    delay(2000);
+    ::delay(1000);
     led(false);
 }
 
