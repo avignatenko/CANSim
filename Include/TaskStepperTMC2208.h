@@ -7,8 +7,8 @@ class AccelStepper;
 class TaskStepperTMC2208 : private Task
 {
 public:
-    TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset, float speed, float acceleration);
-   
+    TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset);
+
     void start();
 
     void stop();
@@ -17,6 +17,7 @@ public:
     int32_t position() const;
     int32_t targetPosition() const;
     void setSpeed(float speed);
+    void setAcceleration(float acceleration);
 
 private:
     bool Callback() override;

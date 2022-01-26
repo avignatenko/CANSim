@@ -8,7 +8,7 @@ bool TaskStepperTMC2208::Callback()
     return true;
 }
 
-TaskStepperTMC2208::TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset, float speed, float acceleration)
+TaskStepperTMC2208::TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset)
     : Task(TASK_IMMEDIATE, TASK_FOREVER, &sh, false)
 {
     motor_ = new AccelStepper(AccelStepper::DRIVER, step, dir);
@@ -62,4 +62,9 @@ int32_t TaskStepperTMC2208::targetPosition() const
 void TaskStepperTMC2208::setSpeed(float speed)
 {
     motor_->setMaxSpeed(speed);
+}
+
+void TaskStepperTMC2208::setAcceleration(float acceleration)
+{
+    motor_->setAcceleration(acceleration);
 }
