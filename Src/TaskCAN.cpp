@@ -52,7 +52,7 @@ void TaskCAN::start()
 {
     pinMode(intPort_, INPUT);
 
-    byte retriesLeft = 5;
+    int8_t retriesLeft = 5;
     for (; retriesLeft >= 0; --retriesLeft)
     {
         if (CAN_OK == mcpCAN_->begin(MCP_STDEXT, CAN_500KBPS, MCP_16MHZ))  // init can bus : baudrate = 500k
@@ -68,14 +68,21 @@ void TaskCAN::start()
 
     if (retriesLeft < 0) taskErrorLed_.addError(TaskErrorLed::ERROR_CAN);
 
-    // mcpCAN_->init_Mask(0, 1, 0b11111111110000000000);  // Init first mask...
-    // mcpCAN_->init_Mask(1, 1, 0b11111111110000000000);  // Init second mask...
-    // mcpCAN_->init_Filt(0, 1, (simaddress_ << 10));     // Init first filter...
+    updateCANFilters();
 
     mcpCAN_->setMode(MCP_NORMAL);
 
     taskCANReceive_.enable();
     taskCANCheckError_.enable();
+}
+
+void TaskCAN::updateCANFilters()
+{
+    mcpCAN_->init_Mask(0, 1, 0b11111111110000000000);  // Init first mask...
+    mcpCAN_->init_Mask(1, 1, 0b11111111110000000000);  // Init second mask...
+    mcpCAN_->init_Filt(0, 1, (simaddress_ << 10));     // Init first filter...
+    // mcpCAN_->init_Filt(2, 1, 0);                       // Init third filter...
+    mcpCAN_->setMode(MCP_NORMAL);
 }
 
 void TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload)
@@ -125,4 +132,6 @@ uint16_t TaskCAN::simAddress()
 void TaskCAN::setSimAddress(uint16_t simAddress)
 {
     simaddress_ = simAddress;
+
+    if (taskCANReceive_.isEnabled()) updateCANFilters();
 }

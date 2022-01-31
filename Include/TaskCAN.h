@@ -33,6 +33,7 @@ public:
     void setSimAddress(uint16_t simAddress);
 
 private:
+    void updateCANFilters();
     bool loopCANReceiveCallback();
     bool loopCANCheckCallback();
 
