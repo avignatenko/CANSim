@@ -21,7 +21,8 @@ class MCP_CAN;
 class TaskCAN
 {
 public:
-    TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress);
+    TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress,
+            bool receiveUnknown = false);
 
     void start();
 
@@ -31,6 +32,8 @@ public:
 
     uint16_t simAddress();
     void setSimAddress(uint16_t simAddress);
+
+    void setReceiveUnknown(bool receiveUnknown);
 
 private:
     void updateCANFilters();
@@ -63,6 +66,7 @@ private:
     MCP_CAN* mcpCAN_;
     uint16_t simaddress_;  // 0 .. 1023
     byte intPort_;
+    bool receiveUnknown_;
 
     fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback_ = nullptr;
 };

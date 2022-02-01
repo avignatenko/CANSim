@@ -37,13 +37,15 @@ bool TaskCAN::loopCANCheckCallback()
     return true;
 }
 
-TaskCAN::TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress)
+TaskCAN::TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress,
+                 bool receiveUnknown)
     : taskErrorLed_(taskErrorLed),
       taskCANReceive_(this, &TaskCAN::loopCANReceiveCallback, TASK_IMMEDIATE, TASK_FOREVER, &sh, false),
       taskCANCheckError_(this, &TaskCAN::loopCANCheckCallback, 1000 * TASK_MILLISECOND, TASK_FOREVER, &sh, false),
       mcpCAN_(new MCP_CAN(spiPort)),
       simaddress_(simaddress),
-      intPort_(intPort)
+      intPort_(intPort),
+      receiveUnknown_(receiveUnknown)
 
 {
 }
@@ -81,7 +83,7 @@ void TaskCAN::updateCANFilters()
     mcpCAN_->init_Mask(0, 1, 0b11111111110000000000);  // Init first mask...
     mcpCAN_->init_Mask(1, 1, 0b11111111110000000000);  // Init second mask...
     mcpCAN_->init_Filt(0, 1, (simaddress_ << 10));     // Init first filter...
-    // mcpCAN_->init_Filt(2, 1, 0);                       // Init third filter...
+    if (receiveUnknown_) mcpCAN_->init_Filt(2, 1, 0);  // Init third filter to get message with 0 target
     mcpCAN_->setMode(MCP_NORMAL);
 }
 
@@ -133,5 +135,11 @@ void TaskCAN::setSimAddress(uint16_t simAddress)
 {
     simaddress_ = simAddress;
 
+    if (taskCANReceive_.isEnabled()) updateCANFilters();
+}
+
+void TaskCAN::setReceiveUnknown(bool receiveUnknown)
+{
+    receiveUnknown_ = receiveUnknown;
     if (taskCANReceive_.isEnabled()) updateCANFilters();
 }
