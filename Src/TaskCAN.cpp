@@ -32,6 +32,7 @@ bool TaskCAN::loopCANCheckCallback()
     }
     else
     {
+        taskErrorLed_.removeError(TaskErrorLed::ERROR_CAN);
     }
 
     return true;
@@ -80,15 +81,26 @@ void TaskCAN::start()
 
 void TaskCAN::updateCANFilters()
 {
-    mcpCAN_->init_Mask(0, 1, 0b11111111110000000000);  // Init first mask...
-    mcpCAN_->init_Mask(1, 1, 0b11111111110000000000);  // Init second mask...
-    mcpCAN_->init_Filt(0, 1, (simaddress_ << 10));     // Init first filter...
-    if (receiveUnknown_) mcpCAN_->init_Filt(2, 1, 0);  // Init third filter to get message with 0 target
+    uint32_t mask = 1023L << 10;
+    uint32_t addrFilter = static_cast<uint32_t>(simaddress_) << 10;
+
+    mcpCAN_->init_Mask(0, 1, mask);        // Init first mask...
+    mcpCAN_->init_Filt(0, 1, addrFilter);  // Init first filter...
+    mcpCAN_->init_Filt(1, 1, addrFilter);  // Init second filter...
+
+    mcpCAN_->init_Mask(1, 1, mask);                              // Init second mask...
+    mcpCAN_->init_Filt(2, 1, receiveUnknown_ ? 0 : addrFilter);  // Init third filter...
+    mcpCAN_->init_Filt(3, 1, addrFilter);                        // Init fouth filter...
+    mcpCAN_->init_Filt(4, 1, addrFilter);                        // Init fifth filter...
+    mcpCAN_->init_Filt(5, 1, addrFilter);                        // Init sixth filter...
+
     mcpCAN_->setMode(MCP_NORMAL);
 }
 
 void TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload)
 {
+    if (!taskCANReceive_.isEnabled()) return;
+
     uint32_t msg = 0;
     // 4 bits: (25 .. 28) priority (0 .. 15)
     msg |= (static_cast<uint32_t>(priority) & 0b1111) << 25;
@@ -115,10 +127,6 @@ void TaskCAN::parseBuffer(uint32_t id, byte len, byte* buffer)
     // 10 bits (0 .. 9): src address (0 .. 1023)
     uint16_t srcAddress = id & 0b1111111111;
     uint16_t dstAddress = (id >> 10) & 0b1111111111;
-    if (dstAddress != simaddress_)
-    {
-        return;
-    }
 
     uint16_t port = (id >> 20) & 0b11111;
     uint16_t priority = (id >> 25) & 0b1111;
