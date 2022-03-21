@@ -4,6 +4,11 @@
 const int kOffsetVars = 0;
 const int kMaxVars = 20;
 
+void InstrumentBase::run()
+{
+    taskManager_.execute();
+}
+
 CommonInstrument::CommonInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin)
     : taskErrorLed_(taskManager_, ledPin),
       taskButton_(taskManager_, buttonPin),
@@ -27,11 +32,6 @@ void CommonInstrument::setup()
     taskErrorLed_.start();
     taskButton_.start();
     taskCAN_.start();
-}
-
-void CommonInstrument::run()
-{
-    taskManager_.execute();
 }
 
 BasicInstrument::BasicInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin)

@@ -10,12 +10,20 @@
 
 #include "FastDelegate.h"
 
-class CommonInstrument
+class InstrumentBase
+{
+public:
+    void run();
+
+protected:
+    Scheduler taskManager_;
+};
+
+class CommonInstrument : public InstrumentBase
 {
 public:
     CommonInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin);
     virtual void setup();
-    void run();
 
 protected:
     virtual void onButtonPressed(bool pressed);
@@ -25,7 +33,6 @@ protected:
     }
 
 protected:
-    Scheduler taskManager_;
     TaskErrorLed taskErrorLed_;
     TaskButton taskButton_;
     TaskCAN taskCAN_;
