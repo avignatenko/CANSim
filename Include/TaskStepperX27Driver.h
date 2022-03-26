@@ -7,7 +7,7 @@ class AccelStepper;
 class TaskStepperX27Driver: private Task
 {
 public:
-    TaskStepperX27Driver(Scheduler& sh, byte step, byte dir, byte reset, bool limit = true);
+    TaskStepperX27Driver(Scheduler& sh, byte step, byte dir, byte reset, bool limit = true, bool invertDir = true);
 
     void start();
 
