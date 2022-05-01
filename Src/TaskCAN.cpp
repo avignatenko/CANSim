@@ -69,7 +69,11 @@ void TaskCAN::start()
         }
     }
 
-    if (retriesLeft < 0) taskErrorLed_.addError(TaskErrorLed::ERROR_CAN);
+    if (retriesLeft < 0)
+    {
+        taskErrorLed_.addError(TaskErrorLed::ERROR_CAN);
+        return;
+    }
 
     updateCANFilters();
 
