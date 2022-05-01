@@ -2,12 +2,9 @@
 
 #include "Common.h"
 
-#include "FastDelegate.h"
+#include <Bounce2.h>
 
-namespace Bounce2
-{
-class Button;
-}
+#include "FastDelegate.h"
 
 class TaskButton : private Task
 {
@@ -16,12 +13,15 @@ public:
 
     void start();
 
-    void setPressedCallback(fastdelegate::FastDelegate1<bool> callback) { callback_ = callback; }
+    void setPressedCallback(fastdelegate::FastDelegate2<bool, byte> callback) { callback_ = callback; }
+
+    bool pressed();
+    byte pin();
 
 private:
     bool Callback() override;
 
 private:
-    Bounce2::Button* button_;
-    fastdelegate::FastDelegate1<bool> callback_;
+    Bounce2::Button button_;
+    fastdelegate::FastDelegate2<bool, byte> callback_;
 };

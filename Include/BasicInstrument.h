@@ -26,7 +26,7 @@ public:
     virtual void setup();
 
 protected:
-    virtual void onButtonPressed(bool pressed);
+    virtual void onButtonPressed(bool pressed, byte port);
     virtual void onCANReceived(byte priority, byte port, uint16_t srcAddress, uint16_t dstAddress, byte len,
                                byte* payload)
     {

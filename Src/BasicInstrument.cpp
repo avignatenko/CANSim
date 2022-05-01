@@ -18,7 +18,7 @@ CommonInstrument::CommonInstrument(byte ledPin, byte buttonPin, byte canSPIPin, 
     taskCAN_.setReceiveCallback(fastdelegate::MakeDelegate(this, &CommonInstrument::onCANReceived));
 }
 
-void CommonInstrument::onButtonPressed(bool pressed)
+void CommonInstrument::onButtonPressed(bool pressed, byte port)
 {
     if (pressed)
         taskErrorLed_.addError(TaskErrorLed::ERROR_TEST_LED);
@@ -210,14 +210,14 @@ void BasicInstrument::onLutAction(byte lutIdx, LutAction action)
     if (action.cmd == BasicInstrument::LUTCommand::Save)
     {
         lut.save(lutOffset(lutIdx));
-        Serial.println("OK");
+        Serial.println(F("OK"));
         return;
     }
 
     if (action.cmd == BasicInstrument::LUTCommand::Clear)
     {
         lut.clear();
-        Serial.println("OK");
+        Serial.println(F("OK"));
         return;
     }
 
@@ -236,11 +236,11 @@ void BasicInstrument::onLutAction(byte lutIdx, LutAction action)
         else
             lut.addValue(action.pos, action.posl);
 
-        Serial.print("Set ");
+        Serial.print(F("Set "));
         Serial.print(action.posl);
-        Serial.print("->");
+        Serial.print(F("->"));
         Serial.print(action.pos);
-        Serial.println(" OK");
+        Serial.println(F(" OK"));
 
         Serial.println(lut);
         return;
@@ -250,9 +250,9 @@ void BasicInstrument::onLutAction(byte lutIdx, LutAction action)
     {
         lut.removeValue(action.posl);
 
-        Serial.print("Remove ");
+        Serial.print(F("Remove "));
         Serial.print(action.posl);
-        Serial.println(" OK");
+        Serial.println(F(" OK"));
 
         Serial.println(lut);
         return;
