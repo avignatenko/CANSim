@@ -7,14 +7,7 @@ bool TaskButton::Callback()
 
     button_.update();
 
-    if (button_.pressed())
-    {
-        callback_(true, button_.getPin());
-    }
-    else if (button_.released())
-    {
-        callback_(false, button_.getPin());
-    }
+    if (button_.changed()) callback_(button_.pressed(), button_.getPin());
 
     return true;
 }
