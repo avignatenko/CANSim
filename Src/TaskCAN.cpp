@@ -58,7 +58,7 @@ void TaskCAN::start()
     int8_t retriesLeft = 5;
     for (; retriesLeft >= 0; --retriesLeft)
     {
-        if (CAN_OK == mcpCAN_->begin(MCP_STDEXT, CAN_500KBPS, MCP_16MHZ))  // init can bus : baudrate = 500k
+        if (CAN_OK == mcpCAN_->begin(MCP_STDEXT, CAN_1000KBPS, MCP_8MHZ))  // init can bus : baudrate = 500k
         {
             break;
         }
