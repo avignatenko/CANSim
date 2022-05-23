@@ -29,7 +29,7 @@ public:
     void sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload);
 
     void setReceiveCallback(fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback);
-
+    void setErrorCAllback(fastdelegate::FastDelegate1<byte> callback);
     uint16_t simAddress();
     void setSimAddress(uint16_t simAddress);
 
@@ -68,5 +68,6 @@ private:
     byte intPort_;
     bool receiveUnknown_;
 
-    fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback_ = nullptr;
+    fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback_;
+    fastdelegate::FastDelegate1<byte> errorCallback_;
 };

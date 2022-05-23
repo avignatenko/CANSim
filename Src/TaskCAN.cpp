@@ -28,6 +28,7 @@ bool TaskCAN::loopCANCheckCallback()
 
     if (error != 0)
     {
+        if (errorCallback_) errorCallback_(mcpCAN_->getError());
         taskErrorLed_.addError(TaskErrorLed::ERROR_CAN);
     }
     else
@@ -121,6 +122,11 @@ void TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte
 void TaskCAN::setReceiveCallback(fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback)
 {
     callback_ = callback;
+}
+
+void TaskCAN::setErrorCAllback(fastdelegate::FastDelegate1<byte> callback)
+{
+    errorCallback_ = callback;
 }
 
 void TaskCAN::parseBuffer(uint32_t id, byte len, byte* buffer)
