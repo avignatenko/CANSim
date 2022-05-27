@@ -8,28 +8,26 @@ bool TaskStepperTMC2208::Callback()
     return true;
 }
 
-TaskStepperTMC2208::TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset)
+TaskStepperTMC2208::TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset, bool invertDir)
     : Task(TASK_IMMEDIATE, TASK_FOREVER, &sh, false)
 {
     motor_ = new AccelStepper(AccelStepper::DRIVER, step, dir);
 
-    motor_->setPinsInverted(true, false, true);  // invert direction
+    motor_->setPinsInverted(invertDir, false, true);  // invert direction
     motor_->setEnablePin(reset);
+
+    constexpr int kMaxSpeed = 2500;  // steps per second
+    constexpr int kAcceleration = 5000;
+    // set normal speed & acceleration
+    motor_->setMaxSpeed(kMaxSpeed);
+    motor_->setAcceleration(kAcceleration);
 }
 
 void TaskStepperTMC2208::start()
 {
-   
     motor_->enableOutputs();
 
-    constexpr int kMaxSpeed = 2500;  // steps per second
-    constexpr int kAcceleration = 5000;
-
     motor_->setCurrentPosition(0);
-
-    // set normal speed & acceleration
-    motor_->setMaxSpeed(kMaxSpeed);
-    motor_->setAcceleration(kAcceleration);
 
     enable();
 }
@@ -42,6 +40,11 @@ void TaskStepperTMC2208::setPosition(int32_t steps)
 void TaskStepperTMC2208::stop()
 {
     motor_->stop();
+}
+
+bool TaskStepperTMC2208::isRunning()
+{
+    return motor_->isRunning();
 }
 
 void TaskStepperTMC2208::resetPosition(int32_t position)

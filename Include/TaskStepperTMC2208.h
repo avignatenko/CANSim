@@ -7,11 +7,12 @@ class AccelStepper;
 class TaskStepperTMC2208 : private Task
 {
 public:
-    TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset);
+    TaskStepperTMC2208(Scheduler& sh, byte step, byte dir, byte reset, bool invertDir = false);
 
     void start();
 
     void stop();
+    bool isRunning();
     void resetPosition(int32_t position);
     void setPosition(int32_t position);
     int32_t position() const;
