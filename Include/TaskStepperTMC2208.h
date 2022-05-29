@@ -18,6 +18,8 @@ public:
     int32_t position() const;
     int32_t targetPosition() const;
     void setSpeed(float speed);
+    float speed() const;
+
     void setAcceleration(float acceleration);
 
 private:

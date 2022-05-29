@@ -71,3 +71,8 @@ void TaskStepperTMC2208::setAcceleration(float acceleration)
 {
     motor_->setAcceleration(acceleration);
 }
+
+float TaskStepperTMC2208::speed() const
+{
+    return motor_->maxSpeed();
+}
