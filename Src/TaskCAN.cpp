@@ -4,17 +4,14 @@
 
 bool TaskCAN::loopCANReceiveCallback()
 {
+    // check if data coming
     if (!digitalRead(intPort_))
     {
         static byte len = 0;
         static byte buf[8];
-        // check if data coming
         uint32_t id;
         byte result = mcpCAN_->readMsgBuf(&id, &len, buf);  // read data,  len: data length, buf: data buf
-        if (result != CAN_OK)
-        {
-            return true;
-        }
+        if (result != CAN_OK) return true;
 
         parseBuffer(id & 0x1FFFFFFF, len, buf);
     }
