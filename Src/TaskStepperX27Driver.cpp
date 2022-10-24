@@ -20,8 +20,9 @@ TaskStepperX27Driver::TaskStepperX27Driver(Scheduler& sh, byte step, byte dir, b
     motor_->setEnablePin(reset);
 
     // per datasheet speed limit 600 deg / second = 600 * 12 steps / second
-    constexpr int kMaxSpeed = 600 * 12 * 0.7;  // steps per second
-    constexpr int kAcceleration = 9000;
+    constexpr int kMaxArduino16hzSpeed = 4000; // per AccelStepper manual
+    constexpr int kMaxSpeed = min(kMaxArduino16hzSpeed * 3 / 4, 600 * 12 * 0.7);  // steps per second
+    constexpr int kAcceleration = 4000;
     maxSpeed_ = kMaxSpeed;
     maxAcceleration_ = kAcceleration;
 }
