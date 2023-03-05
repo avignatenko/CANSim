@@ -21,7 +21,7 @@ class MCP_CAN;
 class TaskCAN
 {
 public:
-    TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress,
+    TaskCAN(TaskErrorLedBase& taskErrorLed, Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress,
             bool receiveUnknown = false);
 
     void start();
@@ -43,7 +43,7 @@ private:
     void parseBuffer(uint32_t id, byte len, byte* buffer);
 
 private:
-    TaskErrorLed& taskErrorLed_;
+    TaskErrorLedBase& taskErrorLed_;
 
     class TaskWithClassCallback : public Task
     {

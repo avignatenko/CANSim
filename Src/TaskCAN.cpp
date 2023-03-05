@@ -36,7 +36,7 @@ bool TaskCAN::loopCANCheckCallback()
     return true;
 }
 
-TaskCAN::TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress,
+TaskCAN::TaskCAN(TaskErrorLedBase& taskErrorLed, Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress,
                  bool receiveUnknown)
     : taskErrorLed_(taskErrorLed),
       taskCANReceive_(this, &TaskCAN::loopCANReceiveCallback, TASK_IMMEDIATE, TASK_FOREVER, &sh, false),
