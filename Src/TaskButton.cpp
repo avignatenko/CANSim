@@ -1,6 +1,5 @@
 #include "TaskButton.h"
 
-
 bool TaskButton::Callback()
 {
     if (!callback_) return;
@@ -12,16 +11,14 @@ bool TaskButton::Callback()
     return true;
 }
 
-TaskButton::TaskButton(Scheduler& sh, byte ledPort)
-    : Task(5 * TASK_MILLISECOND, TASK_FOREVER, &sh, false)
-{
-    button_.attach(ledPort, INPUT_PULLUP);
-    button_.interval(20);
-    button_.setPressedState(LOW);
-}
+TaskButton::TaskButton(Scheduler& sh, uint8_t port) : Task(5 * TASK_MILLISECOND, TASK_FOREVER, &sh, false), port_(port) {}
 
 void TaskButton::start()
 {
+    button_.attach(port_, INPUT_PULLUP);
+    button_.interval(20);
+    button_.setPressedState(LOW);
+
     enable();
 }
 

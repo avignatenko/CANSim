@@ -2,14 +2,15 @@
 
 #include "Common.h"
 
-#include <Bounce2.h>
-
 #include "FastDelegate.h"
+#include "Bounce2MCP23017.h"
 
-class TaskButton : private Task
+class Adafruit_MCP23X17;
+
+class TaskButtonMCP23017 : private Task
 {
 public:
-    TaskButton(Scheduler& sh, uint8_t btnPort);
+    TaskButtonMCP23017(Scheduler& sh, Adafruit_MCP23X17& mcp, uint8_t port);
 
     void start();
 
@@ -23,6 +24,6 @@ private:
 
 private:
     uint8_t port_;
-    Bounce2::Button button_;
+    Bounce2::ButtonMCP23017 button_;
     fastdelegate::FastDelegate2<bool, byte> callback_;
 };
