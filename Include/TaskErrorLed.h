@@ -2,10 +2,12 @@
 
 #include "Common.h"
 
-class TaskErrorLed : private Task
+#include <Adafruit_MCP23X17.h>
+
+class TaskErrorLedBase : private Task
 {
 public:
-    TaskErrorLed(Scheduler& sh, byte ledPort);
+    TaskErrorLedBase(Scheduler& sh);
 
     enum Error
     {
@@ -24,13 +26,41 @@ public:
 protected:
     virtual bool Callback() override;
 
+    virtual void initLed() = 0;
+    virtual void led(bool on) = 0;
+
 private:
     void updateDelay();
-
-    void led(bool on);
+    void ledOwn(bool on);
 
 private:
-    byte ledPort_;
     byte error_ = 0;
     bool ledOn_ = false;
+};
+
+class TaskErrorLed : public TaskErrorLedBase
+{
+public:
+    TaskErrorLed(Scheduler& sh, uint8_t pin);
+
+protected:
+    virtual void initLed() override;
+    virtual void led(bool on) override;
+
+private:
+    uint8_t pin_;
+};
+
+class TaskErrorLedMCP23017 : public TaskErrorLedBase
+{
+public:
+    TaskErrorLedMCP23017(Scheduler& sh, Adafruit_MCP23X17& mcp, uint8_t pin);
+
+protected:
+    virtual void initLed() override;
+    virtual void led(bool on) override;
+
+private:
+    Adafruit_MCP23X17& mcp_;
+    uint8_t pin_;
 };
