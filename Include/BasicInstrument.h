@@ -23,6 +23,7 @@ class CommonInstrument : public InstrumentBase
 {
 public:
     CommonInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin);
+    CommonInstrument(TaskErrorLedBase* taskError, byte buttonPin, byte canSPIPin, byte canIntPin);
     virtual void setup();
 
 protected:
@@ -33,7 +34,7 @@ protected:
     }
 
 protected:
-    TaskErrorLed taskErrorLed_;
+    TaskErrorLedBase* taskErrorLed_;
     TaskButton taskButton_;
     TaskCAN taskCAN_;
 };

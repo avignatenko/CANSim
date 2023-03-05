@@ -10,26 +10,30 @@ void InstrumentBase::run()
 }
 
 CommonInstrument::CommonInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin)
-    : taskErrorLed_(taskManager_, ledPin),
+    : CommonInstrument(new TaskErrorLed(taskManager_, ledPin), buttonPin, canSPIPin, canIntPin)
+{
+}
+
+CommonInstrument::CommonInstrument(TaskErrorLedBase* taskError, byte buttonPin, byte canSPIPin, byte canIntPin)
+    : taskErrorLed_(taskError),
       taskButton_(taskManager_, buttonPin),
-      taskCAN_(taskErrorLed_, taskManager_, canSPIPin, canIntPin, 0)
+      taskCAN_(*taskErrorLed_, taskManager_, canSPIPin, canIntPin, 0)
 {
     taskButton_.setPressedCallback(fastdelegate::MakeDelegate(this, &CommonInstrument::onButtonPressed));
     taskCAN_.setReceiveCallback(fastdelegate::MakeDelegate(this, &CommonInstrument::onCANReceived));
 }
-
 void CommonInstrument::onButtonPressed(bool pressed, byte port)
 {
     if (pressed)
-        taskErrorLed_.addError(TaskErrorLed::ERROR_TEST_LED);
+        taskErrorLed_->addError(TaskErrorLed::ERROR_TEST_LED);
     else
-        taskErrorLed_.removeError(TaskErrorLed::ERROR_TEST_LED);
+        taskErrorLed_->removeError(TaskErrorLed::ERROR_TEST_LED);
 }
 
 void CommonInstrument::setup()
 {
     // start services
-    taskErrorLed_.start();
+    taskErrorLed_->start();
     taskButton_.start();
     taskCAN_.start();
 }
@@ -73,7 +77,7 @@ void BasicInstrument::setup()
 {
     CommonInstrument::setup();
 
-     // load luts
+    // load luts
     for (byte i = 0; i < (byte)luts_.size(); ++i)
     {
         getLUT(i).load(lutOffset(i));
@@ -467,45 +471,45 @@ void BasicInstrument::cmdCWFastCallback(SerialCommands* sender, void* data)
     me->cWFastCallback(sender);
 }
 
-    byte BasicInstrument::addVar(const char* name)
-    {
-        vars_.resize(vars_.size() + 1);
-        vars_.back().name = name;
-        return vars_.size() - 1;
-    }
+byte BasicInstrument::addVar(const char* name)
+{
+    vars_.resize(vars_.size() + 1);
+    vars_.back().name = name;
+    return vars_.size() - 1;
+}
 
-    float BasicInstrument::getVar(byte idx)
-    {
-        float var;
-        EEPROM.get(kOffsetVars + idx * sizeof(float), var);
-        return var;
-    }
+float BasicInstrument::getVar(byte idx)
+{
+    float var;
+    EEPROM.get(kOffsetVars + idx * sizeof(float), var);
+    return var;
+}
 
-    void BasicInstrument::setVar(byte idx, float value)
+void BasicInstrument::setVar(byte idx, float value)
+{
+    EEPROM.put(kOffsetVars + idx * sizeof(float), value);
+    if (idx == varAddrIdx_)  // addr
     {
-        EEPROM.put(kOffsetVars + idx * sizeof(float), value);
-        if (idx == varAddrIdx_)  // addr
-        {
-            taskCAN_.setSimAddress((uint16_t)value);
-        }
+        taskCAN_.setSimAddress((uint16_t)value);
     }
+}
 
-    byte BasicInstrument::addLUT(const char* name, byte maxSize)
-    {
-        luts_.resize(luts_.size() + 1);
-        luts_.back().name = name;
-        luts_.back().lut.setMaxSize(maxSize);
-        return luts_.size() - 1;
-    }
+byte BasicInstrument::addLUT(const char* name, byte maxSize)
+{
+    luts_.resize(luts_.size() + 1);
+    luts_.back().name = name;
+    luts_.back().lut.setMaxSize(maxSize);
+    return luts_.size() - 1;
+}
 
-    StoredLUT& BasicInstrument::getLUT(byte idx)
-    {
-        return luts_[idx].lut;
-    }
+StoredLUT& BasicInstrument::getLUT(byte idx)
+{
+    return luts_[idx].lut;
+}
 
-    byte BasicInstrument::addPos(const char* name)
-    {
-        poss_.resize(poss_.size() + 1);
-        poss_.back() = name;
-        return poss_.size() - 1;
-    }
+byte BasicInstrument::addPos(const char* name)
+{
+    poss_.resize(poss_.size() + 1);
+    poss_.back() = name;
+    return poss_.size() - 1;
+}
