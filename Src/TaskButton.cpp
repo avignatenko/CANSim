@@ -2,18 +2,16 @@
 
 bool TaskButtonBase::Callback()
 {
-    if (!callback_) return;
+    if (!callback_) return false;
 
- 
+    updateButton();
+
     if (buttonChanged()) callback_(buttonPressed(), pin());
 
     return true;
 }
 
-TaskButtonBase::TaskButtonBase(Scheduler& sh)
-    : Task(5 * TASK_MILLISECOND, TASK_FOREVER, &sh, false)
-{
-}
+TaskButtonBase::TaskButtonBase(Scheduler& sh) : Task(20 * TASK_MILLISECOND, TASK_FOREVER, &sh, false) {}
 
 void TaskButtonBase::start()
 {
@@ -24,10 +22,7 @@ void TaskButtonBase::start()
 
 ////////
 
-TaskButton::TaskButton(Scheduler& sh, uint8_t btnPort): TaskButtonBase(sh), port_(btnPort)
-{
-
-}
+TaskButton::TaskButton(Scheduler& sh, uint8_t btnPort) : TaskButtonBase(sh), port_(btnPort) {}
 
 bool TaskButton::buttonPressed()
 {
@@ -41,7 +36,7 @@ bool TaskButton::buttonChanged()
 
 void TaskButton::updateButton()
 {
-   button_.update();
+    button_.update();
 }
 
 void TaskButton::initButton()
@@ -63,9 +58,9 @@ byte TaskButton::pin()
 
 ////////
 
-TaskButtonMCP23017::TaskButtonMCP23017(Scheduler& sh, Adafruit_MCP23X17& mcp, uint8_t btnPort): TaskButtonBase(sh), button_(mcp), port_(btnPort)
+TaskButtonMCP23017::TaskButtonMCP23017(Scheduler& sh, Adafruit_MCP23X17& mcp, uint8_t btnPort)
+    : TaskButtonBase(sh), button_(mcp), port_(btnPort)
 {
-    
 }
 
 bool TaskButtonMCP23017::buttonPressed()
@@ -80,7 +75,7 @@ bool TaskButtonMCP23017::buttonChanged()
 
 void TaskButtonMCP23017::updateButton()
 {
-   button_.update();
+    button_.update();
 }
 
 void TaskButtonMCP23017::initButton()

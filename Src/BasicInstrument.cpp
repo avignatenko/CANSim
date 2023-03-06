@@ -10,18 +10,20 @@ void InstrumentBase::run()
 }
 
 CommonInstrument::CommonInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin)
-    : CommonInstrument(new TaskErrorLed(taskManager_, ledPin), buttonPin, canSPIPin, canIntPin)
-{
-}
-
-CommonInstrument::CommonInstrument(TaskErrorLedBase* taskError, byte buttonPin, byte canSPIPin, byte canIntPin)
-    : taskErrorLed_(taskError),
-      taskButton_(taskManager_, buttonPin),
+    : taskErrorLed_(new TaskErrorLed(taskManager_, ledPin)),
+      taskButton_(new TaskButton(taskManager_, buttonPin)),
       taskCAN_(*taskErrorLed_, taskManager_, canSPIPin, canIntPin, 0)
 {
-    taskButton_.setPressedCallback(fastdelegate::MakeDelegate(this, &CommonInstrument::onButtonPressed));
+    taskButton_->setPressedCallback(fastdelegate::MakeDelegate(this, &CommonInstrument::onButtonPressed));
     taskCAN_.setReceiveCallback(fastdelegate::MakeDelegate(this, &CommonInstrument::onCANReceived));
 }
+
+CommonInstrument::CommonInstrument(byte canSPIPin, byte canIntPin)
+    : taskCAN_(*taskErrorLed_, taskManager_, canSPIPin, canIntPin, 0)
+{
+    taskCAN_.setReceiveCallback(fastdelegate::MakeDelegate(this, &CommonInstrument::onCANReceived));
+}
+
 void CommonInstrument::onButtonPressed(bool pressed, byte port)
 {
     if (pressed)
@@ -34,7 +36,7 @@ void CommonInstrument::setup()
 {
     // start services
     taskErrorLed_->start();
-    taskButton_.start();
+    taskButton_->start();
     taskCAN_.start();
 }
 
