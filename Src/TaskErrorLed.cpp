@@ -10,33 +10,35 @@ int getHighestBit(int value)
 }
 }  // namespace
 
-void TaskErrorLedBase::ledOwn(bool on)
+void TaskErrorLed::led(bool on)
 {
-    led(on);
+    ledPort_.digitalWrite(on ? HIGH : LOW);
     ledOn_ = on;
 }
 
-bool TaskErrorLedBase::Callback()
+bool TaskErrorLed::Callback()
 {
     // blink
-    ledOwn(!ledOn_);
+    led(!ledOn_);
 
     return true;
 }
 
-TaskErrorLedBase::TaskErrorLedBase(Scheduler& sh) : Task(TASK_IMMEDIATE, TASK_FOREVER, &sh, false) {}
-
-void TaskErrorLedBase::start()
+TaskErrorLed::TaskErrorLed(Scheduler& sh, Pin& ledPort)
+    : Task(TASK_IMMEDIATE, TASK_FOREVER, &sh, false), ledPort_(ledPort)
 {
-    initLed();
-
-    // test 1sec on
-    ledOwn(true);
-    ::delay(1000);
-    ledOwn(false);
+    ledPort_.pinMode(OUTPUT);
 }
 
-void TaskErrorLedBase::addError(int error)
+void TaskErrorLed::start()
+{
+    // test 1sec on
+    led(true);
+    ::delay(1000);
+    led(false);
+}
+
+void TaskErrorLed::addError(int error)
 {
     int newError = error_ | error;
     if (error_ == newError) return;
@@ -44,7 +46,7 @@ void TaskErrorLedBase::addError(int error)
     updateDelay();
 }
 
-void TaskErrorLedBase::removeError(int error)
+void TaskErrorLed::removeError(int error)
 {
     int newError = error_ & ~error;
     if (error_ == newError) return;
@@ -52,23 +54,23 @@ void TaskErrorLedBase::removeError(int error)
     updateDelay();
 }
 
-void TaskErrorLedBase::removeAllErrors()
+void TaskErrorLed::removeAllErrors()
 {
     if (error_ == 0) return;
     error_ = 0;
     updateDelay();
 }
 
-int TaskErrorLedBase::error()
+int TaskErrorLed::error()
 {
     return error_;
 }
 
-void TaskErrorLedBase::updateDelay()
+void TaskErrorLed::updateDelay()
 {
     if (error_ == ERROR_OK)
     {
-        ledOwn(false);
+        led(false);
         disable();
         return;
     }
@@ -76,7 +78,7 @@ void TaskErrorLedBase::updateDelay()
     int highestBit = getHighestBit(error_);
     if (highestBit == 0)  // on forever
     {
-        ledOwn(true);
+        led(true);
         disable();
         return;
     }
@@ -85,35 +87,4 @@ void TaskErrorLedBase::updateDelay()
 
     enableIfNot();
     setInterval(delayMs * TASK_MILLISECOND);
-}
-
-///////////////
-
-TaskErrorLed::TaskErrorLed(Scheduler& sh, uint8_t pin) : TaskErrorLedBase(sh), pin_(pin) {}
-
-void TaskErrorLed::initLed()
-{
-    pinMode(pin_, OUTPUT);
-}
-
-void TaskErrorLed::led(bool on)
-{
-    digitalWrite(pin_, on ? HIGH : LOW);
-}
-
-///////////////
-
-TaskErrorLedMCP23017::TaskErrorLedMCP23017(Scheduler& sh, Adafruit_MCP23X17& mcp, uint8_t pin)
-    : TaskErrorLedBase(sh), mcp_(mcp), pin_(pin)
-{
-}
-
-void TaskErrorLedMCP23017::initLed()
-{
-    mcp_.pinMode(pin_, OUTPUT);
-}
-
-void TaskErrorLedMCP23017::led(bool on)
-{
-    mcp_.digitalWrite(pin_, on ? HIGH : LOW);
 }

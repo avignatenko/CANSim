@@ -2,6 +2,7 @@
 
 #include "Common.h"
 
+#include "Pin.h"
 #include "StoredLUT.h"
 #include "TaskButton.h"
 #include "TaskCAN.h"
@@ -22,34 +23,26 @@ protected:
 class CommonInstrument : public InstrumentBase
 {
 public:
-    CommonInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin);
-    CommonInstrument(byte canSPIPin, byte canIntPin);
+    CommonInstrument(Pin& ledPin, Pin& buttonPin, byte canSPIPin, byte canIntPin);
     virtual void setup();
 
 protected:
-    void setTaskErrorLed(TaskErrorLedBase* taskError) { taskErrorLed_ = taskError; }
-    void setTaskButton(TaskButtonBase* taskButton)
-    {
-        taskButton_ = taskButton;
-        taskButton_->setPressedCallback(fastdelegate::MakeDelegate(this, &CommonInstrument::onButtonPressed));
-    }
-
-    virtual void onButtonPressed(bool pressed, byte port);
+    virtual void onButtonPressed(bool pressed,  Pin&  port);
     virtual void onCANReceived(byte priority, byte port, uint16_t srcAddress, uint16_t dstAddress, byte len,
                                byte* payload)
     {
     }
 
 protected:
-    TaskErrorLedBase* taskErrorLed_ = nullptr;
-    TaskButtonBase* taskButton_ = nullptr;
+    TaskErrorLed taskErrorLed_;
+    TaskButton taskButton_;
     TaskCAN taskCAN_;
 };
 
 class BasicInstrument : public CommonInstrument
 {
 public:
-    BasicInstrument(byte ledPin, byte buttonPin, byte canSPIPin, byte canIntPin);
+    BasicInstrument(Pin& ledPin, Pin& buttonPin, byte canSPIPin, byte canIntPin);
     virtual void setup();
 
 protected:
