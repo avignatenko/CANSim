@@ -404,7 +404,7 @@ void BasicInstrument::actCallback(SerialCommands* sender)
     const char* commandStr = sender->Next();
     if (commandStr)
     {
-        for (int i = 0; i < poss_.size(); ++i)
+        for (int i = 0; i < (int)poss_.size(); ++i)
         {
             if (strcmp(commandStr, poss_[i]) == 0)
             {

@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-class Adafruit_MCP23X17;
+class MCP23017;
 
 class Pin
 {
@@ -31,11 +31,11 @@ class MCP23X17Pin : public Pin
 {
     public:
 
-    MCP23X17Pin(Adafruit_MCP23X17& mcp, uint8_t pin) : Pin(pin), mcp_(mcp) {}
+    MCP23X17Pin(MCP23017& mcp, uint8_t pin) : Pin(pin), mcp_(mcp) {}
 
     virtual void pinMode(uint8_t mode) override;
     virtual uint8_t digitalRead() override;
     virtual uint8_t digitalWrite(uint8_t value) override;
 private:
-    Adafruit_MCP23X17& mcp_;
+    MCP23017& mcp_;
 };

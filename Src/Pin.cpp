@@ -1,6 +1,6 @@
 #include "Pin.h"
          
-#include <Adafruit_MCP23X17.h>
+#include <MCP23017.h>
 
 void ArduinoPin::pinMode(uint8_t mode) { ::pinMode(pin_, mode);}
 uint8_t ArduinoPin::digitalRead() { return ::digitalRead(pin_);}
