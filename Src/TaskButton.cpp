@@ -13,7 +13,7 @@ bool TaskButton::Callback()
 }
 
 TaskButton::TaskButton(Scheduler& sh, Pin& ledPort)
-    : Task(5 * TASK_MILLISECOND, TASK_FOREVER, &sh, false), button_(ledPort)
+    : Task(10 * TASK_MILLISECOND, TASK_FOREVER, &sh, false), button_(ledPort)
 {
     button_.attach(ledPort, INPUT_PULLUP);
     button_.interval(20);
