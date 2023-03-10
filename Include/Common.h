@@ -6,3 +6,5 @@
 #define _TASK_INLINE
 #define _TASK_OO_CALLBACKS
 #include <TaskScheduler.h>
+
+#define ETL_NO_STL
