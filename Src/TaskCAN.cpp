@@ -2,23 +2,45 @@
 
 #include "mcp_can.h"
 
+#include <etl/queue_spsc_isr.h>
+
+namespace
+{
+struct Data
+{
+    uint32_t id;
+    uint8_t len;
+    byte buf[8];
+};
+
+struct InterruptControl
+{
+    static void lock() { noInterrupts(); }
+
+    static void unlock() { interrupts(); }
+};
+
+etl::queue_spsc_isr<Data, 6, InterruptControl, etl::memory_model::MEMORY_MODEL_SMALL> s_buffer;
+TaskCAN* s_instance = nullptr;
+
+}  // namespace
+
+void TaskCAN::onCANInterrupt()
+{
+    if (s_buffer.full_from_isr()) return;  // sorry...
+
+    Data data;
+    // read data,  len: data length, buf: data buf
+    byte result = s_instance->mcpCAN_->readMsgBuf(&data.id, &data.len, data.buf);
+    if (result != CAN_OK) return;
+    s_buffer.push_from_isr(data);
+}
+
 bool TaskCAN::loopCANReceiveCallback()
 {
-    // check if data coming
-    if (!digitalRead(intPort_))
-    {
-        static byte len = 0;
-        static byte buf[8];
-        uint32_t id;
-        byte result = mcpCAN_->readMsgBuf(&id, &len, buf);  // read data,  len: data length, buf: data buf
-        if (result != CAN_OK) return true;
-
-        parseBuffer(id & 0x1FFFFFFF, len, buf);
-
-        return true;
-    }
-
-    return false;
+    Data val;
+    while (s_buffer.pop(val)) parseBuffer(val.id & 0x1FFFFFFF, val.len, val.buf);
+    return true;
 }
 
 bool TaskCAN::loopCANCheckCallback()
@@ -49,6 +71,7 @@ TaskCAN::TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte i
       receiveUnknown_(receiveUnknown)
 
 {
+    s_instance = this;
 }
 
 void TaskCAN::start()
@@ -77,6 +100,8 @@ void TaskCAN::start()
 
     updateCANFilters();
 
+    attachInterrupt(digitalPinToInterrupt(intPort_), &TaskCAN::onCANInterrupt, FALLING);
+
     mcpCAN_->setMode(MCP_NORMAL);
 
     taskCANReceive_.enable();
@@ -103,7 +128,7 @@ void TaskCAN::updateCANFilters()
 
 uint8_t TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload)
 {
-    if (!taskCANReceive_.isEnabled()) return;
+    if (!taskCANReceive_.isEnabled()) return MCP2515_FAIL;
 
     uint32_t msg = 0;
     // 4 bits: (25 .. 28) priority (0 .. 15)
