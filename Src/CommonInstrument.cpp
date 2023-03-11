@@ -1,5 +1,7 @@
 #include "CommonInstrument.h"
 
+#include "Pin.h"
+
 void InstrumentBase::run()
 {
     taskManager_.execute();

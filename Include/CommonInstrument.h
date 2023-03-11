@@ -4,6 +4,8 @@
 #include "TaskCAN.h"
 #include "TaskErrorLed.h"
 
+class Pin;
+
 class InstrumentBase
 {
 public:
