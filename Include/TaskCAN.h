@@ -26,7 +26,7 @@ public:
 
     void start();
 
-    void sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload);
+    uint8_t sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload);
 
     void setReceiveCallback(fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback);
     void setErrorCAllback(fastdelegate::FastDelegate1<byte> callback);

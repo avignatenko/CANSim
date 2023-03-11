@@ -14,9 +14,11 @@ bool TaskCAN::loopCANReceiveCallback()
         if (result != CAN_OK) return true;
 
         parseBuffer(id & 0x1FFFFFFF, len, buf);
+
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 bool TaskCAN::loopCANCheckCallback()
@@ -99,7 +101,7 @@ void TaskCAN::updateCANFilters()
     mcpCAN_->setMode(MCP_NORMAL);
 }
 
-void TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload)
+uint8_t TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload)
 {
     if (!taskCANReceive_.isEnabled()) return;
 
@@ -113,7 +115,7 @@ void TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte
     // 10 bits (0 .. 9): src address (0 .. 1023)
     msg |= (static_cast<uint32_t>(simaddress_) & 0b1111111111) << 0;
 
-    mcpCAN_->sendMsgBuf(msg, 1, len, payload);
+    return mcpCAN_->sendMsgBuf(msg, 1, len, payload);
 }
 
 void TaskCAN::setReceiveCallback(fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback)
