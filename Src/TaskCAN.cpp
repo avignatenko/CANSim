@@ -2,59 +2,32 @@
 
 #include "mcp_can.h"
 
-#include <etl/queue_spsc_isr.h>
-
-namespace
-{
-struct Data
-{
-    uint32_t id;
-    uint8_t len;
-    byte buf[8];
-};
-
-struct InterruptControl
-{
-    static void lock() { noInterrupts(); }
-    static void unlock() { interrupts(); }
-};
-
-constexpr uint8_t BUFFER_SIZE = 6;
-etl::queue_spsc_isr<Data, BUFFER_SIZE, InterruptControl, etl::memory_model::MEMORY_MODEL_SMALL> s_buffer;
-TaskCAN* s_instance = nullptr;
-
-}  // namespace
-
-void TaskCAN::onCANInterrupt()
-{
-    Data data;
-    // read data,  len: data length, buf: data buf
-    byte result = s_instance->mcpCAN_->readMsgBuf(&data.id, &data.len, data.buf);
-    if (result != CAN_OK) return;
-    s_buffer.push_from_isr(data);  // here we potentially drop messages
-}
-
 bool TaskCAN::loopCANReceiveCallback()
 {
-    Data val;
-    if (s_buffer.pop(val))
+    // check if data coming
+    if (!digitalRead(intPort_))
     {
-        parseBuffer(val.id & 0x1FFFFFFF, val.len, val.buf);
+        static byte len = 0;
+        static byte buf[8];
+        uint32_t id;
+        byte result = mcpCAN_->readMsgBuf(&id, &len, buf);  // read data,  len: data length, buf: data buf
+        if (result != CAN_OK) return true;
+
+        parseBuffer(id & 0x1FFFFFFF, len, buf);
+
         return true;
     }
-    else
-        return false;
+
+    return false;
 }
 
 bool TaskCAN::loopCANCheckCallback()
 {
-    InterruptControl::lock();
-    uint8_t error = mcpCAN_->getError();
-    InterruptControl::unlock();
+    byte error = mcpCAN_->checkError();
 
-    if (error & MCP_EFLG_ERRORMASK)
+    if (error != 0)
     {
-        if (errorCallback_) errorCallback_(error);
+        if (errorCallback_) errorCallback_(mcpCAN_->getError());
         taskErrorLed_.addError(TaskErrorLed::ERROR_CAN);
     }
     else
@@ -76,7 +49,6 @@ TaskCAN::TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte i
       receiveUnknown_(receiveUnknown)
 
 {
-    s_instance = this;
 }
 
 void TaskCAN::start()
@@ -105,8 +77,6 @@ void TaskCAN::start()
 
     updateCANFilters();
 
-    attachInterrupt(digitalPinToInterrupt(intPort_), &TaskCAN::onCANInterrupt, FALLING);
-
     mcpCAN_->setMode(MCP_NORMAL);
 
     taskCANReceive_.enable();
@@ -133,7 +103,7 @@ void TaskCAN::updateCANFilters()
 
 uint8_t TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, byte len, byte* payload)
 {
-    if (!taskCANReceive_.isEnabled()) return MCP2515_FAIL;
+    if (!taskCANReceive_.isEnabled()) return;
 
     uint32_t msg = 0;
     // 4 bits: (25 .. 28) priority (0 .. 15)
@@ -145,10 +115,7 @@ uint8_t TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, b
     // 10 bits (0 .. 9): src address (0 .. 1023)
     msg |= (static_cast<uint32_t>(simaddress_) & 0b1111111111) << 0;
 
-    InterruptControl::lock();
-    uint8_t res = mcpCAN_->sendMsgBuf(msg, 1, len, payload);
-    InterruptControl::unlock();
-    return res;
+    return mcpCAN_->sendMsgBuf(msg, 1, len, payload);
 }
 
 void TaskCAN::setReceiveCallback(fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback)

@@ -42,8 +42,6 @@ private:
 
     void parseBuffer(uint32_t id, byte len, byte* buffer);
 
-    static void onCANInterrupt();
-
 private:
     TaskErrorLed& taskErrorLed_;
 
