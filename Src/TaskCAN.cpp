@@ -16,40 +16,45 @@ struct Data
 struct InterruptControl
 {
     static void lock() { noInterrupts(); }
-
     static void unlock() { interrupts(); }
 };
 
-volatile etl::queue_spsc_isr<Data, 6, InterruptControl, etl::memory_model::MEMORY_MODEL_SMALL> s_buffer;
+constexpr uint8_t BUFFER_SIZE = 6;
+etl::queue_spsc_isr<Data, BUFFER_SIZE, InterruptControl, etl::memory_model::MEMORY_MODEL_SMALL> s_buffer;
 TaskCAN* s_instance = nullptr;
 
 }  // namespace
 
 void TaskCAN::onCANInterrupt()
 {
-    if (s_buffer.full_from_isr()) return;  // sorry...
-
     Data data;
     // read data,  len: data length, buf: data buf
     byte result = s_instance->mcpCAN_->readMsgBuf(&data.id, &data.len, data.buf);
     if (result != CAN_OK) return;
-    s_buffer.push_from_isr(data);
+    s_buffer.push_from_isr(data);  // here we potentially drop messages
 }
 
 bool TaskCAN::loopCANReceiveCallback()
 {
     Data val;
-    while (s_buffer.pop(val)) parseBuffer(val.id & 0x1FFFFFFF, val.len, val.buf);
-    return true;
+    if (s_buffer.pop(val))
+    {
+        parseBuffer(val.id & 0x1FFFFFFF, val.len, val.buf);
+        return true;
+    }
+    else
+        return false;
 }
 
 bool TaskCAN::loopCANCheckCallback()
 {
-    byte error = mcpCAN_->checkError();
+    InterruptControl::lock();
+    uint8_t error = mcpCAN_->getError();
+    InterruptControl::unlock();
 
-    if (error != 0)
+    if (error & MCP_EFLG_ERRORMASK)
     {
-        if (errorCallback_) errorCallback_(mcpCAN_->getError());
+        if (errorCallback_) errorCallback_(error);
         taskErrorLed_.addError(TaskErrorLed::ERROR_CAN);
     }
     else
@@ -140,7 +145,10 @@ uint8_t TaskCAN::sendMessage(byte priority, byte port, uint16_t dstSimAddress, b
     // 10 bits (0 .. 9): src address (0 .. 1023)
     msg |= (static_cast<uint32_t>(simaddress_) & 0b1111111111) << 0;
 
-    return mcpCAN_->sendMsgBuf(msg, 1, len, payload);
+    InterruptControl::lock();
+    uint8_t res = mcpCAN_->sendMsgBuf(msg, 1, len, payload);
+    InterruptControl::unlock();
+    return res;
 }
 
 void TaskCAN::setReceiveCallback(fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback)
