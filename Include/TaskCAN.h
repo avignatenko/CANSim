@@ -4,7 +4,7 @@
 #include "FastDelegate.h"
 #include "TaskErrorLed.h"
 
-class MCP_CAN;
+class MCP2515;
 
 // CAM-Sim message format
 // CAN id (high bit -> low bit, total 29 bits, only extended format supported):
@@ -63,7 +63,7 @@ private:
 
     TaskWithClassCallback taskCANReceive_;
     TaskWithClassCallback taskCANCheckError_;
-    MCP_CAN* mcpCAN_;
+    MCP2515* mcp2515_;
     uint16_t simaddress_;  // 0 .. 1023
     byte intPort_;
     bool receiveUnknown_;
