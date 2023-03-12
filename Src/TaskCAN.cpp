@@ -20,7 +20,7 @@ struct InterruptControl
     static void unlock() { interrupts(); }
 };
 
-etl::queue_spsc_isr<Data, 6, InterruptControl, etl::memory_model::MEMORY_MODEL_SMALL> s_buffer;
+volatile etl::queue_spsc_isr<Data, 6, InterruptControl, etl::memory_model::MEMORY_MODEL_SMALL> s_buffer;
 TaskCAN* s_instance = nullptr;
 
 }  // namespace
