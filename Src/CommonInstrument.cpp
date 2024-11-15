@@ -7,7 +7,7 @@ void InstrumentBase::run()
     taskManager_.execute();
 }
 
-CommonInstrument::CommonInstrument(Pin& ledPin, Pin& buttonPin, byte canSPIPin, byte canIntPin)
+CommonInstrument::CommonInstrument(Pin& ledPin, Pin& buttonPin, Pin& canSPIPin, Pin& canIntPin)
     : taskErrorLed_(taskManager_, ledPin),
       taskButton_(taskManager_, buttonPin),
       taskCAN_(taskErrorLed_, taskManager_, canSPIPin, canIntPin, 0)

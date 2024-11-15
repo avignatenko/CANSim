@@ -6,7 +6,7 @@ const int kMaxVars = 20;
 
 
 
-BasicInstrument::BasicInstrument(Pin& ledPin, Pin& buttonPin, byte canSPIPin, byte canIntPin)
+BasicInstrument::BasicInstrument(Pin& ledPin, Pin& buttonPin, Pin& canSPIPin, Pin& canIntPin)
     : CommonInstrument(ledPin, buttonPin, canSPIPin, canIntPin), taskMenu_(taskManager_)
 {
     taskMenu_.cmdLine().SetDefaultHandler(&BasicInstrument::cmdErrorCallback, this);

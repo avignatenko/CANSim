@@ -15,7 +15,7 @@
 class BasicInstrument : public CommonInstrument
 {
 public:
-    BasicInstrument(Pin& ledPin, Pin& buttonPin, byte canSPIPin, byte canIntPin);
+    BasicInstrument(Pin& ledPin, Pin& buttonPin, Pin& canSPIPin, Pin& canIntPin);
     virtual void setup();
 
 protected:

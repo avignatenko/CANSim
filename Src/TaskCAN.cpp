@@ -29,11 +29,11 @@ bool TaskCAN::loopCANReceiveCallback()
 
         Serial.println();
     }
-#endif 
+#endif
 
 #if 1
     // check if data coming
-    if (!digitalRead(intPort_))
+    if (!intPort_.digitalRead())
     {
         s_interrupt = false;
 
@@ -79,12 +79,12 @@ bool TaskCAN::loopCANCheckCallback()
     return true;
 }
 
-TaskCAN::TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress,
+TaskCAN::TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, Pin& spiPort, Pin& intPort, uint16_t simaddress,
                  bool receiveUnknown)
     : taskErrorLed_(taskErrorLed),
       taskCANReceive_(this, &TaskCAN::loopCANReceiveCallback, TASK_IMMEDIATE, TASK_FOREVER, &sh, false),
       taskCANCheckError_(this, &TaskCAN::loopCANCheckCallback, 1000 * TASK_MILLISECOND, TASK_FOREVER, &sh, false),
-      mcp2515_(new MCP2515(spiPort)),
+      mcp2515_(new MCP2515(spiPort.toInt())),
       simaddress_(simaddress),
       intPort_(intPort),
       receiveUnknown_(receiveUnknown)
@@ -94,7 +94,7 @@ TaskCAN::TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte i
 
 void TaskCAN::start()
 {
-    pinMode(intPort_, INPUT);
+    intPort_.pinMode(INPUT);
 
     MCP2515::ERROR e = mcp2515_->reset();
 
@@ -112,7 +112,7 @@ void TaskCAN::start()
         return;
     }
 
-    attachInterrupt(intPort_, irqHandler, FALLING);
+    intPort_.attachInterrupt(irqHandler, FALLING);
 
     updateCANFilters();
 

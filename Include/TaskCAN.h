@@ -21,7 +21,7 @@ class MCP2515;
 class TaskCAN
 {
 public:
-    TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, byte spiPort, byte intPort, uint16_t simaddress,
+    TaskCAN(TaskErrorLed& taskErrorLed, Scheduler& sh, Pin& spiPort, Pin& intPort, uint16_t simaddress,
             bool receiveUnknown = false);
 
     void start();
@@ -65,7 +65,7 @@ private:
     TaskWithClassCallback taskCANCheckError_;
     MCP2515* mcp2515_;
     uint16_t simaddress_;  // 0 .. 1023
-    byte intPort_;
+    Pin& intPort_;
     bool receiveUnknown_;
 
     fastdelegate::FastDelegate6<byte, byte, uint16_t, uint16_t, byte, byte*> callback_;
